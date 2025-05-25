@@ -1,0 +1,264 @@
+{
+  "profile_name": "default",
+  "profile_version": "1.0.0",
+  "description": "Standard VM configuration for general malware analysis",
+  "created": "2025-01-01",
+  "last_updated": "2025-01-01",
+
+  "vm_configuration": {
+    "hardware": {
+      "cpu_cores": 2,
+      "memory_mb": 4096,
+      "disk_size_gb": 60,
+      "network_adapters": 1,
+      "architecture": "x64"
+    },
+    "guest_os": {
+      "type": "windows",
+      "version": "Windows 10",
+      "edition": "Professional",
+      "build": "19045",
+      "language": "en-US",
+      "timezone": "UTC"
+    },
+    "credentials": {
+      "username": "Analyst",
+      "password": "ShikraAnalysis2025!",
+      "auto_login": true
+    }
+  },
+
+  "stealth_configuration": {
+    "anti_detection": {
+      "hide_hypervisor_flag": true,
+      "custom_cpu_model": "host",
+      "cpu_features": ["-vmx", "-hypervisor"],
+      "randomize_mac": true,
+      "use_localtime_rtc": true,
+      "disable_hpet": false,
+      "machine_type": "q35"
+    },
+    "smbios_spoofing": {
+      "enable_spoofing": true,
+      "system_manufacturer": "Dell Inc.",
+      "system_product_name": "OptiPlex 7090",
+      "system_version": "1.0.0",
+      "system_serial_number": "RANDOM_SERIAL",
+      "bios_vendor": "Dell Inc.",
+      "bios_version": "2.8.0",
+      "bios_release_date": "04/15/2023",
+      "board_manufacturer": "Dell Inc.",
+      "board_product_name": "0K240Y",
+      "chassis_type": "3"
+    }
+  },
+
+  "monitoring_configuration": {
+    "procmon": {
+      "enabled": true,
+      "config_file": "config/procmon/procmon_config.pmc",
+      "behavioral_filters": "config/procmon/behavioral_filters.json",
+      "noise_filters": "config/procmon/noise_filters.json",
+      "malware_patterns": "config/procmon/malware_patterns.json",
+      "auto_start": true,
+      "duration_seconds": 600,
+      "filter_level": "balanced",
+      "export_format": "csv",
+      "log_directory": "C:\\Shikra\\Logs",
+      "max_log_size_mb": 500
+    },
+    "network_capture": {
+      "enabled": true,
+      "interface": "auto",
+      "capture_filter": "not (host 192.168.122.1 or broadcast or multicast)",
+      "duration_seconds": 600,
+      "max_capture_size_mb": 100,
+      "output_directory": "logs/network"
+    },
+    "memory_analysis": {
+      "enabled": false,
+      "auto_dump": false,
+      "dump_on_process_exit": false,
+      "volatility_profile": "Win10x64_19041"
+    }
+  },
+
+  "analysis_configuration": {
+    "behavioral_analysis": {
+      "enabled": true,
+      "processor": "shikra.core.modules.monitoring.procmon_processor",
+      "config_overrides": {
+        "behavioral_thresholds": {
+          "mass_file_modification": {"threshold": 50, "time_window_seconds": 300},
+          "registry_modifications": {"threshold": 20, "time_window_seconds": 180}
+        }
+      }
+    },
+    "network_analysis": {
+      "enabled": true,
+      "processor": "shikra.analysis.modules.analysis.network_analysis",
+      "pcap_parser_preference": "tshark",
+      "dns_analysis": true,
+      "http_analysis": true,
+      "tls_analysis": true
+    },
+    "static_analysis": {
+      "enabled": false,
+      "yara_rules_directory": "rules/yara",
+      "pe_analysis": true,
+      "strings_analysis": true
+    }
+  },
+
+  "network_configuration": {
+    "isolation": {
+      "internet_access": false,
+      "inetsim_enabled": true,
+      "fake_services": {
+        "dns": true,
+        "http": true,
+        "https": true,
+        "smtp": true,
+        "pop3": true,
+        "irc": true,
+        "ftp": true
+      }
+    },
+    "subnet": "192.168.100.0/24",
+    "vm_ip": "192.168.100.10",
+    "gateway_ip": "192.168.100.1",
+    "dns_servers": ["192.168.100.1", "8.8.8.8"]
+  },
+
+  "security_configuration": {
+    "windows_security": {
+      "disable_defender": true,
+      "disable_firewall": true,
+      "disable_uac": true,
+      "disable_updates": true,
+      "disable_error_reporting": true,
+      "disable_system_restore": true
+    },
+    "analysis_safety": {
+      "snapshot_before_analysis": true,
+      "revert_after_analysis": true,
+      "isolate_network": true,
+      "monitor_host_resources": true
+    }
+  },
+
+  "automation_configuration": {
+    "pre_analysis_scripts": [
+      {
+        "name": "setup_procmon",
+        "script": "core/scripts/setup_procmon.ps1",
+        "type": "powershell",
+        "timeout": 300,
+        "required": true
+      },
+      {
+        "name": "disable_security",
+        "script": "Set-MpPreference -DisableRealtimeMonitoring $true; netsh advfirewall set allprofiles state off",
+        "type": "powershell_inline",
+        "timeout": 60,
+        "required": false
+      }
+    ],
+    "post_analysis_scripts": [
+      {
+        "name": "collect_logs",
+        "script": "Get-ChildItem C:\\Shikra\\Logs\\*.csv | Copy-Item -Destination C:\\Windows\\Temp\\",
+        "type": "powershell_inline",
+        "timeout": 120,
+        "required": true
+      },
+      {
+        "name": "cleanup_temp",
+        "script": "Remove-Item C:\\Windows\\Temp\\procmon* -Force -ErrorAction SilentlyContinue",
+        "type": "powershell_inline",
+        "timeout": 60,
+        "required": false
+      }
+    ]
+  },
+
+  "sample_handling": {
+    "upload_directory": "C:\\Samples",
+    "execution_timeout": 300,
+    "auto_execute": false,
+    "execution_parameters": [],
+    "file_extensions_to_execute": [".exe", ".com", ".scr", ".bat", ".cmd", ".msi"],
+    "analysis_duration": 600
+  },
+
+  "reporting_configuration": {
+    "formats": ["json", "html", "text"],
+    "include_screenshots": false,
+    "include_network_pcap": true,
+    "include_memory_dump": false,
+    "include_procmon_logs": true,
+    "compress_results": true
+  },
+
+  "integration_points": {
+    "behavioral_processor": {
+      "module": "shikra.core.modules.monitoring.procmon_processor",
+      "config_files": [
+        "config/procmon/behavioral_filters.json",
+        "config/procmon/noise_filters.json", 
+        "config/procmon/malware_patterns.json"
+      ]
+    },
+    "vm_controller": {
+      "copy_to_vm": "shikra.core.modules.vm_controller.copy_to_vm",
+      "copy_from_vm": "shikra.core.modules.vm_controller.copy_from_vm",
+      "run_in_vm": "shikra.core.modules.vm_controller.run_in_vm",
+      "stealth": "shikra.core.modules.vm_controller.stealth"
+    },
+    "analysis_pipeline": {
+      "behavioral": "shikra.analysis.modules.analysis.behavioral",
+      "network": "shikra.analysis.modules.analysis.network_analysis",
+      "memory": "shikra.analysis.modules.analysis.memory_analysis"
+    },
+    "reporting": {
+      "generator": "shikra.reporting.modules.reporting.report_generator",
+      "visualizer": "shikra.reporting.modules.reporting.visualizer"
+    }
+  },
+
+  "thresholds_and_limits": {
+    "analysis": {
+      "max_analysis_time_seconds": 1800,
+      "max_procmon_events": 1000000,
+      "max_network_packets": 500000,
+      "max_log_file_size_mb": 500
+    },
+    "resources": {
+      "max_cpu_usage_percent": 80,
+      "max_memory_usage_percent": 75,
+      "max_disk_usage_percent": 85
+    },
+    "detection": {
+      "malware_score_threshold": 70,
+      "suspicious_activity_threshold": 40,
+      "noise_filter_aggressiveness": 85
+    }
+  },
+
+  "error_handling": {
+    "retry_attempts": 3,
+    "retry_delay_seconds": 5,
+    "continue_on_non_critical_errors": true,
+    "log_all_errors": true,
+    "revert_vm_on_critical_error": true
+  },
+
+  "compatibility": {
+    "qemu_version": "6.0+",
+    "libvirt_version": "7.0+",
+    "supported_host_os": ["linux"],
+    "required_tools": ["procmon.exe", "tshark", "volatility3"],
+    "minimum_host_memory_gb": 8,
+    "minimum_host_disk_gb": 100
+  }
+}

@@ -1,0 +1,29 @@
+# Procmon Configuration File (PMC) - Placeholder
+#
+# Purpose:
+# This is a placeholder for the main Process Monitor configuration file
+# used by Noriben and other monitoring tools in Shikra.
+#
+# Context in Shikra:
+# - Referenced in VM profiles (default.json, evasive_malware.json)
+# - Used by core/modules/monitor/noriben_wrapper.py
+# - Contains comprehensive filter rules for malware analysis
+#
+# Instructions:
+# 1. Configure Process Monitor with appropriate filters for malware analysis
+# 2. Include filters for:
+#    - System processes to exclude
+#    - File system locations to monitor
+#    - Registry keys of interest
+#    - Network activity patterns
+# 3. Export configuration and replace this placeholder
+#
+# Recommended Filters:
+# - Exclude: Windows system processes
+# - Include: User data directories
+# - Include: Startup and persistence locations
+# - Include: Suspicious file operations
+# - Include: Network communications
+
+This is a placeholder for ProcmonConfiguration.pmc file.
+Please configure Process Monitor and export the configuration to replace this file.

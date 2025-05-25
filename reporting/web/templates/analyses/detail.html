@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis {{ analysis_id }} - Shikra{% endblock %}
+
+{% block additional_css %}
+<style>
+.threat-score {
+    font-size: 2rem;
+    font-weight: bold;
+}
+.ioc-item {
+    font-family: monospace;
+    font-size: 0.9em;
+    background-color: #f8f9fa;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    margin: 0.25rem 0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1>
+            <i class="fas fa-file-alt"></i>
+            {{ sample_info.filename or 'Unknown Sample' }}
+        </h1>
+        <p class="text-muted mb-0">Analysis ID: {{ analysis_id }}</p>
+        <p class="text-muted">
+            <i class="fas fa-clock"></i> 
+            {{ metadata.generated_at|datetime if metadata.generated_at else 'Unknown time' }}
+        </p>
+    </div>
+    <div class="col-md-4 text-end">
+        <div class="btn-group">
+            <a href="{{ url_for('export_analysis', analysis_id=analysis_id, export_format='json') }}" 
+               class="btn btn-outline-primary">
+                <i class="fas fa-download"></i> JSON
+            </a>
+            <a href="{{ url_for('export_analysis', analysis_id=analysis_id, export_format='pdf') }}" 
+               class="btn btn-outline-secondary">
+                <i class="fas fa-file-pdf"></i> PDF
+            </a>
+            <a href="{{ url_for('export_analysis', analysis_id=analysis_id, export_format='csv') }}" 
+               class="btn btn-outline-success">
+                <i class="fas fa-table"></i> CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-exclamation-triangle"></i> Executive Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3>Threat Level</h3>
+                        <span class="badge bg-{{ get_threat_color(executive_summary.threat_level) }} fs-6">
+                            {{ executive_summary.threat_level or 'Unknown' }}
+                        </span>
+                        <p class="mt-2">{{ executive_summary.risk_description or 'No description available.' }}</p>
+                    </div>
+                    <div class="col-md-6 text-center">
+                        <h3>Threat Score</h3>
+                        <div class="threat-score text-{{ get_score_color(executive_summary.overall_score) }}">
+                            {{ executive_summary.overall_score or 0 }}/100
+                        </div>
+                    </div>
+                </div>
+                
+                {% if executive_summary.key_capabilities %}
+                <h5 class="mt-4">Key Capabilities</h5>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for capability in executive_summary.key_capabilities %}
+                    <span class="badge bg-warning text-dark">{{ capability }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> Sample Information</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr>
+                        <td><strong>Filename:</strong></td>
+                        <td>{{ sample_info.filename or 'Unknown' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Size:</strong></td>
+                        <td>{{ sample_info.size_bytes|filesize if sample_info.size_bytes else 'Unknown' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SHA256:</strong></td>
+                        <td><code class="small">{{ sample_info.sha256[:16] + '...' if sample_info.sha256 else 'Unknown' }}</code></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    {% if behavioral_analysis %}
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-running"></i> Behavioral Analysis</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="fs-4 fw-bold text-{{ get_score_color(behavioral_analysis.score) }}">
+                        {{ behavioral_analysis.score or 0 }}/100
+                    </div>
+                    <div class="badge bg-{{ get_threat_color(behavioral_analysis.classification) }}">
+                        {{ behavioral_analysis.classification or 'Unknown' }}
+                    </div>
+                </div>
+                <small class="text-muted">
+                    Signatures: {{ behavioral_analysis.signatures|length if behavioral_analysis.signatures else 0 }}
+                </small>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if network_analysis %}
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-network-wired"></i> Network Analysis</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="fs-4 fw-bold text-{{ get_score_color(network_analysis.score) }}">
+                        {{ network_analysis.score or 0 }}/100
+                    </div>
+                    <div class="badge bg-{{ get_threat_color(network_analysis.classification) }}">
+                        {{ network_analysis.classification or 'Unknown' }}
+                    </div>
+                </div>
+                <small class="text-muted">
+                    DNS Queries: {{ network_analysis.dns_queries|length if network_analysis.dns_queries else 0 }}
+                </small>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if memory_analysis %}
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-memory"></i> Memory Analysis</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="fs-4 fw-bold text-{{ get_score_color(memory_analysis.score) }}">
+                        {{ memory_analysis.score or 0 }}/100
+                    </div>
+                    <div class="badge bg-{{ get_threat_color(memory_analysis.classification) }}">
+                        {{ memory_analysis.classification or 'Unknown' }}
+                    </div>
+                </div>
+                <small class="text-muted">
+                    Processes: {{ memory_analysis.suspicious_processes|length if memory_analysis.suspicious_processes else 0 }}
+                </small>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% if iocs %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5><i class="fas fa-crosshairs"></i> Indicators of Compromise</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for category, ioc_list in iocs.items() %}
+                {% if ioc_list %}
+                <div class="col-md-6 mb-3">
+                    <h6>{{ category.replace('_', ' ').title() }} ({{ ioc_list|length }})</h6>
+                    <div style="max-height: 200px; overflow-y: auto;">
+                        {% for ioc in ioc_list[:10] %}
+                        <div class="ioc-item">
+                            {% if ioc is mapping %}
+                                {{ ioc.indicator or ioc }}
+                            {% else %}
+                                {{ ioc }}
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        {% if ioc_list|length > 10 %}
+                        <small class="text-muted">... and {{ ioc_list|length - 10 }} more</small>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if mitre_attack %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5><i class="fas fa-shield-alt"></i> MITRE ATT&CK Techniques</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for technique in mitre_attack %}
+            <div class="col-md-6 mb-3">
+                <div class="border rounded p-3">
+                    <h6>{{ technique.technique_id }}: {{ technique.technique_name }}</h6>
+                    <div class="mb-2">
+                        <span class="badge bg-primary">{{ technique.tactic }}</span>
+                        <span class="badge bg-secondary">{{ technique.confidence }}</span>
+                    </div>
+                    <small class="text-muted">{{ technique.evidence }}</small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if visualizations %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5><i class="fas fa-chart-line"></i> Visualizations</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for viz in visualizations %}
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h6>{{ viz.name.replace('_', ' ').title() }}</h6>
+                    </div>
+                    <div class="card-body text-center p-2">
+                        {% if viz.type == 'image' %}
+                        <img src="{{ viz.path }}" class="img-fluid" alt="{{ viz.name }}" 
+                             style="max-height: 300px; cursor: pointer;" 
+                             data-bs-toggle="modal" data-bs-target="#vizModal{{ loop.index }}">
+                        {% else %}
+                        <iframe src="{{ viz.path }}" width="100%" height="300px" frameborder="0"></iframe>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if viz.type == 'image' %}
+                <div class="modal fade" id="vizModal{{ loop.index }}" tabindex="-1">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">{{ viz.name.replace('_', ' ').title() }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <img src="{{ viz.path }}" class="img-fluid" alt="{{ viz.name }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if timeline %}
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-timeline"></i> Execution Timeline</h5>
+    </div>
+    <div class="card-body">
+        <div class="timeline" style="max-height: 400px; overflow-y: auto;">
+            {% for event in timeline %}
+            <div class="d-flex mb-3">
+                <div class="flex-shrink-0">
+                    <span class="badge bg-{{ get_threat_color(event.severity) }}">
+                        {{ event.severity.upper() }}
+                    </span>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h6>{{ event.event_type }}</h6>
+                    <p class="mb-1">{{ event.description }}</p>
+                    <small class="text-muted">{{ event.timestamp }}</small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

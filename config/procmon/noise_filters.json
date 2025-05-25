@@ -1,0 +1,597 @@
+{
+  "filter_version": "1.0.0", 
+  "description": "Advanced noise filtering configuration for ProcMon behavioral analysis",
+  "last_updated": "2025-01-01",
+
+  "noise_reduction_levels": {
+    "aggressive": {
+      "description": "Maximum noise reduction - may miss some edge cases",
+      "filter_percentage": 95,
+      "performance_priority": "high"
+    },
+    "balanced": {
+      "description": "Balanced noise reduction with good coverage",
+      "filter_percentage": 85,
+      "performance_priority": "medium"
+    },
+    "conservative": {
+      "description": "Minimal noise reduction - preserves most events",
+      "filter_percentage": 70,
+      "performance_priority": "low"
+    }
+  },
+
+  "system_noise_patterns": {
+    "windows_system_processes": {
+      "always_filter": [
+        "system",
+        "registry",
+        "smss\\.exe",
+        "csrss\\.exe",
+        "wininit\\.exe", 
+        "services\\.exe",
+        "lsass\\.exe",
+        "winlogon\\.exe",
+        "dwm\\.exe",
+        "audiodg\\.exe",
+        "spoolsv\\.exe",
+        "taskhost\\.exe",
+        "taskhostw\\.exe",
+        "explorer\\.exe",
+        "searchindexer\\.exe",
+        "wmpnetwk\\.exe",
+        "wmiprvse\\.exe",
+        "dllhost\\.exe",
+        "rundll32\\.exe",
+        "regsvr32\\.exe",
+        "msiexec\\.exe",
+        "conhost\\.exe",
+        "fontdrvhost\\.exe",
+        "wincompositor\\.exe",
+        "applicationframehost\\.exe",
+        "runtimebroker\\.exe",
+        "sihost\\.exe",
+        "ctfmon\\.exe",
+        "unsecapp\\.exe",
+        "winrshost\\.exe",
+        "dashost\\.exe",
+        "wlanext\\.exe"
+      ],
+      "filter_conditions": {
+        "normal_system_locations": [
+          "C:\\\\Windows\\\\System32\\\\",
+          "C:\\\\Windows\\\\SysWOW64\\\\"
+        ],
+        "normal_operations": [
+          "QueryInformation",
+          "QueryDirectory",
+          "QueryVolumeInformation",
+          "QueryBasicInformation",
+          "QueryStandardInformation",
+          "CloseFile",
+          "RegCloseKey",
+          "RegQueryKey"
+        ]
+      }
+    },
+
+    "microsoft_software_noise": {
+      "office_applications": [
+        "winword\\.exe",
+        "excel\\.exe", 
+        "powerpnt\\.exe",
+        "outlook\\.exe",
+        "msaccess\\.exe",
+        "mspub\\.exe",
+        "visio\\.exe",
+        "project\\.exe",
+        "onenote\\.exe",
+        "teams\\.exe"
+      ],
+      "office_temp_operations": [
+        "~\\$.*\\.(doc|docx|xls|xlsx|ppt|pptx)$",
+        "\\\\AppData\\\\Local\\\\Microsoft\\\\Office\\\\.*\\.tmp$",
+        "\\\\AppData\\\\Roaming\\\\Microsoft\\\\Office\\\\Recent\\\\",
+        "\\\\AppData\\\\Local\\\\Temp\\\\Word.*\\\\",
+        "\\\\AppData\\\\Local\\\\Temp\\\\Excel.*\\\\",
+        "\\\\AppData\\\\Local\\\\Temp\\\\PowerPoint.*\\\\"
+      ],
+      "visual_studio_noise": [
+        "devenv\\.exe",
+        "msbuild\\.exe",
+        "vbcscompiler\\.exe",
+        "ServiceHub\\..*\\.exe",
+        "PerfWatson2\\.exe",
+        "Microsoft\\.Alm\\.Shared\\.Remoting\\.RemoteContainer\\.dll"
+      ]
+    },
+
+    "browser_noise_patterns": {
+      "chrome_family": [
+        "chrome\\.exe",
+        "msedge\\.exe", 
+        "brave\\.exe",
+        "opera\\.exe"
+      ],
+      "firefox_family": [
+        "firefox\\.exe",
+        "plugin-container\\.exe",
+        "plugin-hang-ui\\.exe"
+      ],
+      "browser_cache_operations": [
+        "\\\\AppData\\\\Local\\\\Google\\\\Chrome\\\\User Data\\\\.*\\\\Cache\\\\",
+        "\\\\AppData\\\\Local\\\\Microsoft\\\\Edge\\\\User Data\\\\.*\\\\Cache\\\\",
+        "\\\\AppData\\\\Local\\\\Mozilla\\\\Firefox\\\\Profiles\\\\.*\\\\cache2\\\\",
+        "\\\\Temporary Internet Files\\\\",
+        "\\\\INetCache\\\\",
+        "\\\\WebCache\\\\.*\\.(dat|log|tmp)$"
+      ],
+      "browser_temp_files": [
+        "\\.crdownload$",
+        "\\.tmp$",
+        "\\.partial$",
+        "\\\\Downloads\\\\.*\\.tmp$"
+      ]
+    },
+
+    "antivirus_noise_patterns": {
+      "windows_defender": [
+        "MsMpEng\\.exe",
+        "NisSrv\\.exe", 
+        "SecurityHealthService\\.exe",
+        "SecurityHealthSystray\\.exe",
+        "MpSigStub\\.exe",
+        "MpCmdRun\\.exe"
+      ],
+      "defender_operations": [
+        "C:\\\\ProgramData\\\\Microsoft\\\\Windows Defender\\\\",
+        "C:\\\\Program Files\\\\Windows Defender\\\\",
+        "\\\\AppData\\\\Local\\\\Microsoft\\\\Windows Security Health\\\\",
+        "HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows Defender\\\\"
+      ],
+      "common_av_processes": [
+        "avp\\.exe",
+        "kavtray\\.exe",
+        "mcshield\\.exe",
+        "mfevtps\\.exe",
+        "avgnt\\.exe",
+        "avguard\\.exe",
+        "sophosssp\\.exe",
+        "SAVAdminService\\.exe",
+        "tmccsf\\.exe",
+        "PccNTMon\\.exe"
+      ]
+    }
+  },
+
+  "file_system_noise": {
+    "temporary_file_patterns": [
+      "\\.tmp$",
+      "\\.temp$",
+      "~.*\\.tmp$",
+      "\\.bak$",
+      "\\.old$",
+      "\\.cache$",
+      "\\.lock$",
+      "\\.log$",
+      "\\.dmp$",
+      "\\.etl$",
+      "\\.pf$",
+      "\\._.*$",
+      "\\.DS_Store$",
+      "Thumbs\\.db$",
+      "desktop\\.ini$"
+    ],
+
+    "system_directories_to_filter": [
+      "C:\\\\Windows\\\\System32\\\\",
+      "C:\\\\Windows\\\\SysWOW64\\\\", 
+      "C:\\\\Windows\\\\WinSxS\\\\",
+      "C:\\\\Windows\\\\assembly\\\\",
+      "C:\\\\Windows\\\\Microsoft\\.NET\\\\",
+      "C:\\\\Windows\\\\Temp\\\\",
+      "C:\\\\Windows\\\\Logs\\\\",
+      "C:\\\\Windows\\\\Prefetch\\\\",
+      "C:\\\\Windows\\\\ServiceProfiles\\\\",
+      "C:\\\\Windows\\\\SoftwareDistribution\\\\",
+      "C:\\\\Windows\\\\Installer\\\\",
+      "C:\\\\Windows\\\\CSC\\\\",
+      "C:\\\\Windows\\\\Panther\\\\",
+      "C:\\\\Windows\\\\servicing\\\\",
+      "C:\\\\Windows\\\\LiveKernelReports\\\\",
+      "C:\\\\Windows\\\\DiagTrack\\\\",
+      "C:\\\\Windows\\\\SystemTemp\\\\",
+      "C:\\\\System Volume Information\\\\"
+    ],
+
+    "user_profile_noise": [
+      "\\\\AppData\\\\Local\\\\Temp\\\\",
+      "\\\\AppData\\\\Local\\\\Microsoft\\\\Windows\\\\Temporary Internet Files\\\\",
+      "\\\\AppData\\\\Local\\\\Microsoft\\\\Windows\\\\INetCache\\\\",
+      "\\\\AppData\\\\Local\\\\Microsoft\\\\Windows\\\\WebCache\\\\",
+      "\\\\AppData\\\\Local\\\\CrashDumps\\\\",
+      "\\\\AppData\\\\Local\\\\ConnectedDevicesPlatform\\\\",
+      "\\\\AppData\\\\Local\\\\Microsoft\\\\CLR_v.*\\\\",
+      "\\\\AppData\\\\Local\\\\Packages\\\\.*\\\\TempState\\\\",
+      "\\\\AppData\\\\Local\\\\Packages\\\\.*\\\\AC\\\\Temp\\\\",
+      "\\\\AppData\\\\Roaming\\\\Microsoft\\\\Windows\\\\Recent\\\\",
+      "\\\\AppData\\\\Roaming\\\\Microsoft\\\\Office\\\\Recent\\\\",
+      "\\\\Recent\\\\",
+      "\\\\SendTo\\\\",
+      "\\\\Links\\\\",
+      "\\\\Favorites\\\\",
+      "\\\\Cookies\\\\",
+      "\\\\History\\\\"
+    ],
+
+    "program_files_noise": [
+      "C:\\\\Program Files\\\\Common Files\\\\microsoft shared\\\\",
+      "C:\\\\Program Files (x86)\\\\Common Files\\\\microsoft shared\\\\",
+      "C:\\\\Program Files\\\\Windows Defender\\\\",
+      "C:\\\\Program Files (x86)\\\\Windows Defender\\\\",
+      "C:\\\\Program Files\\\\Windows Media Player\\\\",
+      "C:\\\\Program Files\\\\Internet Explorer\\\\",
+      "C:\\\\Program Files\\\\Microsoft Office\\\\",
+      "C:\\\\Program Files (x86)\\\\Microsoft Office\\\\",
+      "C:\\\\Program Files\\\\WindowsApps\\\\",
+      "C:\\\\Program Files\\\\Common Files\\\\System\\\\",
+      "C:\\\\Program Files (x86)\\\\Common Files\\\\System\\\\"
+    ]
+  },
+
+  "registry_noise": {
+    "high_frequency_keys": [
+      "HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Services\\\\Tcpip\\\\Parameters\\\\Interfaces\\\\",
+      "HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Services\\\\lanmanserver\\\\Shares\\\\",
+      "HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Installer\\\\",
+      "HKLM\\\\SOFTWARE\\\\Classes\\\\",
+      "HKCU\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\RecentDocs\\\\",
+      "HKCU\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\RunMRU\\\\",
+      "HKCU\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\TypedPaths\\\\",
+      "HKCU\\\\SOFTWARE\\\\Microsoft\\\\Internet Explorer\\\\",
+      "HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Perflib\\\\",
+      "HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Memory Management\\\\",
+      "HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Control\\\\WMI\\\\",
+      "HKLM\\\\SOFTWARE\\\\Microsoft\\\\Ole\\\\",
+      "HKLM\\\\SOFTWARE\\\\Microsoft\\\\Rpc\\\\",
+      "HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Control\\\\Nls\\\\",
+      "HKCU\\\\Control Panel\\\\",
+      "HKCU\\\\Environment\\\\",
+      "HKCU\\\\Keyboard Layout\\\\",
+      "HKCU\\\\Printers\\\\",
+      "HKCU\\\\Network\\\\"
+    ],
+
+    "mru_and_cache_keys": [
+      "\\\\MuiCache\\\\",
+      "\\\\RecentDocs\\\\",
+      "\\\\ComDlg32\\\\OpenSavePidlMRU\\\\",
+      "\\\\ComDlg32\\\\LastVisitedPidlMRU\\\\",
+      "\\\\ComDlg32\\\\CIDSizeMRU\\\\",
+      "\\\\StreamMRU\\\\",
+      "\\\\UserAssist\\\\",
+      "\\\\BagMRU\\\\",
+      "\\\\Bags\\\\",
+      "\\\\WordWheelQuery\\\\",
+      "\\\\TypedURLs\\\\",
+      "\\\\TypedURLsTime\\\\",
+      "\\\\Explorer\\\\RunMRU\\\\",
+      "\\\\Shell Folders\\\\",
+      "\\\\User Shell Folders\\\\"
+    ],
+
+    "session_and_volatile_keys": [
+      "\\\\SessionInformation\\\\",
+      "\\\\Volatile Environment\\\\",
+      "HKCU\\\\Volatile Environment\\\\",
+      "HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment\\\\",
+      "HKLM\\\\HARDWARE\\\\",
+      "HKLM\\\\SAM\\\\SAM\\\\Domains\\\\Account\\\\Users\\\\",
+      "HKLM\\\\SECURITY\\\\Policy\\\\Secrets\\\\",
+      "HKCU\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\Shell\\\\Associations\\\\",
+      "HKCU\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\FileExts\\\\"
+    ],
+
+    "performance_counter_keys": [
+      "HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Perflib\\\\",
+      "HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Services\\\\.*\\\\Performance\\\\",
+      "HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Perflib\\\\.*\\\\Counter.*",
+      "HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Perflib\\\\.*\\\\Help.*"
+    ]
+  },
+
+  "network_noise": {
+    "local_network_traffic": [
+      "127\\.0\\.0\\.1",
+      "localhost",
+      "::1",
+      "0\\.0\\.0\\.0",
+      "169\\.254\\..*",
+      "224\\.0\\.0\\..*",
+      "239\\.255\\.255\\.250",
+      "255\\.255\\.255\\.255",
+      "fe80::.*",
+      "ff02::.*"
+    ],
+
+    "microsoft_telemetry_domains": [
+      ".*\\.microsoft\\.com",
+      ".*\\.windows\\.com",
+      ".*\\.windowsupdate\\.com",
+      ".*\\.live\\.com",
+      ".*\\.msftncsi\\.com",
+      ".*\\.bing\\.com",
+      ".*\\.office\\.com",
+      ".*\\.office365\\.com",
+      ".*\\.skype\\.com",
+      ".*\\.microsoftonline\\.com",
+      ".*\\.azure\\.com",
+      ".*\\.azureedge\\.net",
+      ".*\\.msedge\\.net",
+      ".*\\.msauth\\.net",
+      ".*\\.msocdn\\.com",
+      "telemetry\\.microsoft\\.com",
+      "vortex\\.data\\.microsoft\\.com",
+      "settings-win\\.data\\.microsoft\\.com",
+      "watson\\.telemetry\\.microsoft\\.com"
+    ],
+
+    "common_cdn_noise": [
+      ".*\\.akamai\\..*",
+      ".*\\.cloudflare\\..*",
+      ".*\\.amazonaws\\.com",
+      ".*\\.googleusercontent\\.com",
+      ".*\\.gstatic\\.com",
+      ".*\\.googleapis\\.com",
+      ".*\\.google-analytics\\.com",
+      ".*\\.doubleclick\\.net",
+      ".*\\.facebook\\.com", 
+      ".*\\.fbcdn\\.net",
+      ".*\\.twitter\\.com",
+      ".*\\.twimg\\.com"
+    ],
+
+    "update_and_sync_services": [
+      ".*\\.windowsupdate\\.com",
+      ".*\\.update\\.microsoft\\.com",
+      "download\\.microsoft\\.com",
+      ".*\\.delivery\\.mp\\.microsoft\\.com",
+      ".*\\.tlu\\.dl\\.delivery\\.mp\\.microsoft\\.com",
+      ".*\\.do\\.dsp\\.mp\\.microsoft\\.com",
+      "ctldl\\.windowsupdate\\.com",
+      ".*\\.adobe\\.com",
+      ".*\\.mozilla\\.org",
+      ".*\\.mozilla\\.net"
+    ]
+  },
+
+  "operation_specific_noise": {
+    "file_operations": {
+      "high_frequency_queries": [
+        "QueryInformation",
+        "QueryDirectory", 
+        "QueryVolumeInformation",
+        "QueryBasicInformation",
+        "QueryStandardInformation",
+        "QueryNetworkOpenInformation",
+        "QueryInternalInformation",
+        "QueryEaInformation",
+        "QueryPositionInformation",
+        "QueryAllInformation",
+        "QueryFileInternalInformation"
+      ],
+      "routine_file_access": [
+        "CloseFile",
+        "Cleanup",
+        "FlushBuffersFile",
+        "QuerySecurityFile",
+        "LockFile",
+        "UnlockFile",
+        "QueryQuotaInformationFile",
+        "SetQuotaInformationFile"
+      ],
+      "fastio_operations": [
+        "FASTIO_CHECK_IF_POSSIBLE",
+        "FASTIO_READ",
+        "FASTIO_WRITE", 
+        "FASTIO_QUERY_BASIC_INFO",
+        "FASTIO_QUERY_STANDARD_INFO",
+        "FASTIO_LOCK",
+        "FASTIO_UNLOCK_SINGLE",
+        "FASTIO_UNLOCK_ALL"
+      ]
+    },
+
+    "registry_operations": {
+      "routine_queries": [
+        "RegQueryKey",
+        "RegQueryValue",
+        "RegQueryMultipleValues",
+        "RegEnumerateKey",
+        "RegEnumerateValue",
+        "RegCloseKey",
+        "RegFlushKey",
+        "RegQueryKeySecurity"
+      ],
+      "notification_operations": [
+        "RegNotifyChangeKeyValue",
+        "RegNotifyChangeValue"
+      ]
+    },
+
+    "process_operations": {
+      "thread_noise": [
+        "Thread Create",
+        "Thread Exit",
+        "Thread Profile"
+      ],
+      "image_load_noise": [
+        "Load Image.*\\\\ntdll\\.dll$",
+        "Load Image.*\\\\kernel32\\.dll$", 
+        "Load Image.*\\\\kernelbase\\.dll$",
+        "Load Image.*\\\\user32\\.dll$",
+        "Load Image.*\\\\gdi32\\.dll$",
+        "Load Image.*\\\\advapi32\\.dll$",
+        "Load Image.*\\\\msvcrt\\.dll$",
+        "Load Image.*\\\\ole32\\.dll$",
+        "Load Image.*\\\\oleaut32\\.dll$",
+        "Load Image.*\\\\shell32\\.dll$",
+        "Load Image.*\\\\comctl32\\.dll$"
+      ]
+    }
+  },
+
+  "result_code_filtering": {
+    "always_filter_results": [
+      "FAST IO DISALLOWED",
+      "REPARSE",
+      "OPLOCK BREAK IN PROGRESS",
+      "FILE LOCK CONFLICT",
+      "NOTIFY CLEANUP",
+      "NOTIFY ENUM DIR",
+      "DELETE PENDING",
+      "DIRECTORY NOT EMPTY",
+      "NOT A REPARSE POINT",
+      "REPARSE TAG INVALID",
+      "REPARSE TAG MISMATCH",
+      "VOLUME MOUNT POINT",
+      "NOT A REPARSE POINT",
+      "IO REPARSE TAG NOT HANDLED",
+      "MORE PROCESSING REQUIRED",
+      "WORKING SET QUOTA",
+      "BUFFER ALL ZEROS",
+      "RANGE NOT LOCKED"
+    ],
+
+    "conditionally_filter_results": [
+      "NO MORE FILES",
+      "NO SUCH FILE", 
+      "END OF FILE",
+      "NO MORE ENTRIES",
+      "INVALID PARAMETER",
+      "NOT SUPPORTED",
+      "INVALID DEVICE REQUEST",
+      "BAD NETWORK PATH",
+      "NETWORK ACCESS DENIED",
+      "TOO MANY OPENED FILES",
+      "CANCELLED",
+      "REQUEST ABORTED",
+      "INVALID HANDLE",
+      "BROKEN PIPE"
+    ],
+
+    "preserve_security_results": [
+      "ACCESS DENIED",
+      "PRIVILEGE NOT HELD",
+      "SHARING VIOLATION",
+      "FILE LOCKED WITH ONLY READERS",
+      "FILE LOCKED WITH WRITERS",
+      "LOCK VIOLATION",
+      "NETWORK ACCESS DENIED",
+      "LOGON FAILURE",
+      "ACCOUNT DISABLED",
+      "PASSWORD EXPIRED"
+    ]
+  },
+
+  "timing_based_filters": {
+    "repetitive_operation_detection": {
+      "enable": true,
+      "time_window_seconds": 5,
+      "operation_threshold": 10,
+      "identical_operation_threshold": 5
+    },
+
+    "burst_filtering": {
+      "enable": true,
+      "burst_window_seconds": 1,
+      "operations_per_second_threshold": 50,
+      "keep_first_n_operations": 3,
+      "keep_last_n_operations": 2
+    },
+
+    "idle_period_compression": {
+      "enable": true,
+      "idle_threshold_seconds": 30,
+      "compress_ratio": 0.1
+    }
+  },
+
+  "adaptive_filtering": {
+    "learning_mode": {
+      "enable": false,
+      "learning_period_hours": 24,
+      "confidence_threshold": 0.8,
+      "minimum_samples": 100
+    },
+
+    "environment_detection": {
+      "detect_vm_environment": true,
+      "detect_development_environment": true,
+      "detect_server_environment": true,
+      "adjust_filters_accordingly": true
+    },
+
+    "workload_classification": {
+      "office_workload": {
+        "indicators": ["winword.exe", "excel.exe", "powerpnt.exe"],
+        "additional_filters": ["office_temp_operations"]
+      },
+      "development_workload": {
+        "indicators": ["devenv.exe", "code.exe", "notepad++.exe"],
+        "additional_filters": ["visual_studio_noise"]
+      },
+      "server_workload": {
+        "indicators": ["w3wp.exe", "sqlservr.exe", "mongod.exe"],
+        "additional_filters": ["server_noise_patterns"]
+      }
+    }
+  },
+
+  "performance_optimization": {
+    "early_filtering": {
+      "enable": true,
+      "process_name_prefilter": true,
+      "path_prefilter": true,
+      "result_prefilter": true
+    },
+
+    "bloom_filters": {
+      "enable": true,
+      "expected_elements": 1000000,
+      "false_positive_rate": 0.01
+    },
+
+    "caching": {
+      "enable": true,
+      "cache_size_mb": 50,
+      "cache_ttl_seconds": 300
+    },
+
+    "parallel_processing": {
+      "enable": true,
+      "worker_threads": 4,
+      "chunk_size": 1000
+    }
+  },
+
+  "debugging_and_monitoring": {
+    "filter_statistics": {
+      "enable": true,
+      "track_filter_effectiveness": true,
+      "log_filtered_event_counts": true
+    },
+
+    "sampling_for_review": {
+      "enable": true,
+      "sample_rate": 0.001,
+      "max_samples": 1000
+    },
+
+    "whitelist_violations": {
+      "enable": true,
+      "log_violations": true,
+      "max_violations_logged": 100
+    }
+  }
+}

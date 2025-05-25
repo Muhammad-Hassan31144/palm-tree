@@ -1,0 +1,299 @@
+class FakeIRCHandler:
+    """IRC protocol handler for fake IRC service."""
+    
+    def __init__(self, socket, client_address, interaction_log=None, irc_config=None):
+        self.socket = socket
+        self.client_address = client_address
+        self.interaction_log = interaction_log
+        self.irc_config = irc_config or {}
+        self.nickname = None
+        self.username = None
+        self.channels = set()
+        self.server_name = self.irc_config.get("server_name", "fake.irc.server")
+        
+    def handle_connection(self):
+        """Handle IRC client connection."""
+        try:
+            self.socket.settimeout(30)  # 30 second timeout
+            
+            while True:
+                try:
+                    data = self.socket.recv(1024)
+                    if not data:
+                        break
+                        
+                    # IRC messages are CRLF terminated
+                    messages = data.decode('utf-8', errors='ignore').strip().split('\r\n')
+                    
+                    for message in messages:
+                        if message.strip():
+                            self._handle_irc_message(message.strip())
+                            
+                except socket.timeout:
+                    break
+                except Exception as e:
+                    logger.debug(f"IRC handler error: {e}")
+                    break
+                    
+        finally:
+            try:
+                self.socket.close()
+            except:
+                pass
+    
+    def _handle_irc_message(self, message: str):
+        """Handle individual IRC message."""
+        client_ip = self.client_address[0]
+        
+        # Log the interaction
+        if self.interaction_log:
+            self.interaction_log.log_interaction("irc", {
+                "summary": f"IRC: {message[:50]}{'...' if len(message) > 50 else ''}",
+                "client_ip": client_ip,
+                "raw_message": message,
+                "nickname": self.nickname,
+                "channels": list(self.channels)
+            })
+        
+        # Parse IRC command
+        parts = message.split(' ', 2)
+        command = parts[0].upper()
+        
+        if command == "NICK":
+            self._handle_nick(parts)
+        elif command == "USER":
+            self._handle_user(parts)
+        elif command == "JOIN":
+            self._handle_join(parts)
+        elif command == "PRIVMSG":
+            self._handle_privmsg(parts)
+        elif command == "PART":
+            self._handle_part(parts)
+        elif command == "QUIT":
+            self._handle_quit(parts)
+        elif command == "PING":
+            self._handle_ping(parts)
+        else:
+            # Unknown command
+            self._send_response(f"421 {self.nickname or '*'} {command} :Unknown command")
+    
+    def _handle_nick(self, parts):
+        """Handle NICK command."""
+        if len(parts) > 1:
+            old_nick = self.nickname
+            self.nickname = parts[1]
+            
+            if old_nick:
+                self._send_response(f":{old_nick} NICK {self.nickname}")
+            else:
+                # Send welcome messages after NICK/USER
+                if self.username:
+                    self._send_welcome()
+    
+    def _handle_user(self, parts):
+        """Handle USER command."""
+        if len(parts) > 1:
+            user_parts = parts[1].split(' ', 3)
+            if len(user_parts) >= 4:
+                self.username = user_parts[0]
+                
+                # Send welcome messages after both NICK and USER
+                if self.nickname:
+                    self._send_welcome()
+    
+    def _handle_join(self, parts):
+        """Handle JOIN command."""
+        if len(parts) > 1:
+            channels = parts[1].split(',')
+            for channel in channels:
+                channel = channel.strip()
+                if channel.startswith('#'):
+                    self.channels.add(channel)
+                    
+                    # Confirm join
+                    self._send_response(f":{self.nickname} JOIN {channel}")
+                    
+                    # Send fake topic
+                    topic = self.irc_config.get("channel_topics", {}).get(channel, "Botnet Control Channel")
+                    self._send_response(f"332 {self.nickname} {channel} :{topic}")
+                    
+                    # Send fake user list
+                    users = self.irc_config.get("channel_users", {}).get(channel, ["bot1", "bot2", "operator"])
+                    users_str = ' '.join(users + [self.nickname])
+                    self._send_response(f"353 {self.nickname} = {channel} :{users_str}")
+                    self._send_response(f"366 {self.nickname} {channel} :End of /NAMES list")
+    
+    def _handle_privmsg(self, parts):
+        """Handle PRIVMSG command."""
+        if len(parts) > 2:
+            target = parts[1]
+            message = parts[2][1:] if parts[2].startswith(':') else parts[2]
+            
+            # Check for bot commands
+            bot_responses = self.irc_config.get("bot_responses", {
+                "!status": "Bot online - 1337 infected machines",
+                "!version": "CryptoBot v2.1",
+                "!encrypt": "Starting encryption process...",
+                "!collect": "Collecting system information...",
+                "!download": "http://evil.com/payload.exe",
+                "!key": "AES256:deadbeef1234567890abcdef"
+            })
+            
+            # Send automatic responses for common bot commands
+            for command, response in bot_responses.items():
+                if message.lower().startswith(command.lower()):
+                    # Simulate bot response from operator
+                    operator = self.irc_config.get("operator_nick", "operator")
+                    self._send_response(f":{operator} PRIVMSG {target} :{response}")
+                    break
+    
+    def _handle_part(self, parts):
+        """Handle PART command."""
+        if len(parts) > 1:
+            channels = parts[1].split(',')
+            for channel in channels:
+                channel = channel.strip()
+                if channel in self.channels:
+                    self.channels.remove(channel)
+                    self._send_response(f":{self.nickname} PART {channel}")
+    
+    def _handle_quit(self, parts):
+        """Handle QUIT command."""
+        quit_msg = parts[1][1:] if len(parts) > 1 and parts[1].startswith(':') else "Client quit"
+        self._send_response(f":{self.nickname} QUIT :{quit_msg}")
+        # Connection will be closed by handle_connection
+    
+    def _handle_ping(self, parts):
+        """Handle PING command."""
+        if len(parts) > 1:
+            self._send_response(f"PONG {self.server_name} :{parts[1]}")
+        else:
+            self._send_response(f"PONG {self.server_name}")
+    
+    def _send_welcome(self):
+        """Send IRC welcome sequence."""
+        nick = self.nickname or "unknown"
+        
+        welcome_messages = [
+            f"001 {nick} :Welcome to the Internet Relay Network {nick}",
+            f"002 {nick} :Your host is {self.server_name}, running version 1.0",
+            f"003 {nick} :This server was created sometime",
+            f"004 {nick} {self.server_name} 1.0 o o",
+            f"251 {nick} :There are 1337 users and 666 services on 1 servers",
+            f"422 {nick} :MOTD File is missing"
+        ]
+        
+        for msg in welcome_messages:
+            self._send_response(msg)
+    
+    def _send_response(self, message: str):
+        """Send response to IRC client."""
+        try:
+            response = f":{self.server_name} {message}\r\n"
+            self.socket.send(response.encode('utf-8'))
+        except Exception as e:
+            logger.debug(f"Failed to send IRC response: {e}")
+
+
+def irc_connection_handler(client_socket, client_address, interaction_log, irc_config):
+    """Handle individual IRC connection in a thread."""
+    handler = FakeIRCHandler(client_socket, client_address, interaction_log, irc_config)
+    handler.handle_connection()
+
+
+def start_irc_server(self, port: int = 6667, ssl_cert_path: Optional[str] = None) -> bool:
+    """
+    Start fake IRC server.
+    
+    Args:
+        port: Port to bind to (default 6667, or 6697 for SSL).
+        ssl_cert_path: Path to SSL certificate for IRC over SSL.
+        
+    Returns:
+        bool: True if server started successfully.
+    """
+    service_id = f"irc_{port}"
+    
+    if service_id in self.services:
+        logger.warning(f"IRC server already running on port {port}")
+        return True
+
+    # IRC configuration
+    irc_config = {
+        "server_name": "fake.irc.server",
+        "operator_nick": "operator",
+        "channel_topics": {
+            "#botnet": "Botnet Control Channel - Stay quiet",
+            "#control": "Command and Control",
+            "#crypto": "Crypto Operations"
+        },
+        "channel_users": {
+            "#botnet": ["bot001", "bot002", "bot003", "operator"],
+            "#control": ["operator", "admin"],
+            "#crypto": ["cryptobot", "operator"]
+        },
+        "bot_responses": {
+            "!status": "Bot online - 1337 infected machines",
+            "!version": "CryptoBot v2.1",
+            "!encrypt": "Starting encryption process on all drives...",
+            "!collect": "Collecting system information and credentials...",
+            "!download": "http://127.0.0.1:8080/payload.exe",
+            "!key": "AES256:deadbeef1234567890abcdef12345678",
+            "!spread": "Attempting lateral movement...",
+            "!ransom": "Ransom note deployed to desktop"
+        }
+    }
+
+    try:
+        def irc_server():
+            server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            server_socket.bind((self.bind_ip, port))
+            server_socket.listen(10)
+            
+            logger.info(f"IRC server listening on {self.bind_ip}:{port}")
+            
+            while True:
+                try:
+                    client_socket, client_address = server_socket.accept()
+                    
+                    # Handle SSL if configured
+                    if ssl_cert_path:
+                        import ssl
+                        context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+                        context.load_cert_chain(ssl_cert_path)
+                        client_socket = context.wrap_socket(client_socket, server_side=True)
+                    
+                    # Handle connection in separate thread
+                    client_thread = threading.Thread(
+                        target=irc_connection_handler,
+                        args=(client_socket, client_address, self.interaction_log, irc_config)
+                    )
+                    client_thread.daemon = True
+                    client_thread.start()
+                    
+                except Exception as e:
+                    if "stopped" not in str(e).lower():
+                        logger.debug(f"IRC server error: {e}")
+                    break
+            
+            server_socket.close()
+
+        server_thread = threading.Thread(target=irc_server)
+        server_thread.daemon = True
+        server_thread.start()
+        
+        self.services[service_id] = {
+            "thread": server_thread,
+            "type": "irc",
+            "port": port,
+            "ssl": ssl_cert_path is not None
+        }
+        
+        protocol = "IRCS" if ssl_cert_path else "IRC"
+        logger.info(f"{protocol} server started on {self.bind_ip}:{port}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Failed to start IRC server on port {port}: {e}")
+        return False

@@ -1,0 +1,301 @@
+/*
+Shikra Web Interface Stylesheet (shikra.css)
+
+Purpose:
+This CSS file provides styling for the Shikra malware analysis web interface.
+It defines the visual appearance, layout, and responsive design elements
+for all web pages in the Shikra reporting system.
+
+Context in Shikra:
+- Styling for reporting/web/app.py Flask application
+- Consistent visual theme across all web interfaces
+- Responsive design for desktop and mobile devices
+- Professional appearance suitable for security analysis tools
+
+Key Features:
+- Dark theme optimized for security analysis work (though current base theme is light from Bootstrap)
+- High contrast for readability and accessibility
+- Responsive grid system for various screen sizes
+- Custom styling for data tables and charts
+- Interactive element styling (buttons, forms, navigation)
+- Print-friendly styles for report generation
+*/
+
+/* Global Styles and Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Root Variables for Consistent Theming - More specific overrides for Bootstrap can be done */
+:root {
+    --shikra-primary-color: #0d6efd; /* Default Bootstrap primary, can be customized */
+    --shikra-secondary-color: #6c757d; /* Default Bootstrap secondary */
+    --shikra-accent-color: #e74c3c;
+    --shikra-success-color: #198754; /* Default Bootstrap success */
+    --shikra-warning-color: #ffc107; /* Default Bootstrap warning */
+    --shikra-danger-color: #dc3545; /* Default Bootstrap danger */
+    --shikra-info-color: #0dcaf0;   /* Default Bootstrap info */
+
+    /* Dark theme considerations (can be activated via a class on body or media query) */
+    --shikra-dark-background: #1a1a1a;
+    --shikra-dark-surface: #2d2d2d;
+    --shikra-dark-text-primary: #ffffff;
+    --shikra-dark-text-secondary: #b0b0b0;
+    --shikra-dark-border-color: #404040;
+
+    /* Light theme (default based on Bootstrap) */
+    --shikra-light-background: #f8f9fa;
+    --shikra-light-surface: #ffffff;
+    --shikra-light-text-primary: #212529;
+    --shikra-light-text-secondary: #6c757d;
+    --shikra-light-border-color: #dee2e6;
+}
+
+/* Body and Layout */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--shikra-light-background); /* Default to light theme */
+    color: var(--shikra-light-text-primary);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main.container {
+    flex: 1; /* Ensures footer stays at the bottom */
+    padding-top: 1rem; /* Add some space below navbar */
+    padding-bottom: 2rem; /* Space above footer */
+}
+
+
+/* Navigation and Header Styles */
+.navbar.bg-primary { /* Overriding Bootstrap's primary if needed, or use a custom class */
+    background-color: var(--shikra-primary-color) !important; /* Use !important carefully */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.navbar-brand strong {
+    font-size: 1.5rem;
+}
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.85);
+}
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link.active {
+    color: #ffffff;
+}
+.dropdown-menu {
+    background-color: var(--shikra-light-surface);
+    border: 1px solid var(--shikra-light-border-color);
+}
+.dropdown-item {
+    color: var(--shikra-light-text-primary);
+}
+.dropdown-item:hover {
+    background-color: var(--shikra-light-background);
+}
+
+
+/* Card Styles */
+.card {
+    border: 1px solid var(--shikra-light-border-color);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 1.5rem; /* Consistent spacing */
+}
+.card-header {
+    background-color: var(--shikra-light-background);
+    border-bottom: 1px solid var(--shikra-light-border-color);
+    font-weight: 500;
+}
+
+/* Table Styles for Analysis Results */
+.table { /* General table styling */
+    margin-bottom: 1rem;
+    color: var(--shikra-light-text-primary);
+}
+.table th, .table td {
+    vertical-align: middle;
+    border-top: 1px solid var(--shikra-light-border-color);
+}
+.table thead th {
+    border-bottom: 2px solid var(--shikra-light-border-color);
+    font-weight: 600;
+}
+.table-hover tbody tr:hover {
+    color: var(--shikra-light-text-primary);
+    background-color: rgba(0, 0, 0, 0.05); /* Subtle hover for light theme */
+}
+
+/* Button and Interactive Element Styles */
+.btn {
+    border-radius: 0.25rem; /* Consistent border radius */
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+}
+.btn-primary {
+    background-color: var(--shikra-primary-color);
+    border-color: var(--shikra-primary-color);
+}
+.btn-primary:hover {
+    opacity: 0.9;
+}
+.btn-outline-primary {
+    color: var(--shikra-primary-color);
+    border-color: var(--shikra-primary-color);
+}
+.btn-outline-primary:hover {
+    background-color: var(--shikra-primary-color);
+    color: white;
+}
+/* Add styles for other button types as needed (secondary, success, etc.) */
+
+
+/* Form Styles */
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+.form-control, .form-select {
+    border: 1px solid var(--shikra-light-border-color);
+    background-color: var(--shikra-light-surface);
+    color: var(--shikra-light-text-primary);
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--shikra-primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(var(--shikra-primary-color-rgb, 13, 110, 253), 0.25); /* Use RGB for shadow */
+    background-color: var(--shikra-light-surface);
+    color: var(--shikra-light-text-primary);
+}
+.form-check-input:checked {
+    background-color: var(--shikra-primary-color);
+    border-color: var(--shikra-primary-color);
+}
+
+
+/* Alert Styles */
+.alert {
+    border-radius: 0.25rem;
+}
+
+/* Footer */
+footer.bg-light {
+    background-color: #e9ecef !important; /* Slightly different shade for footer */
+    border-top: 1px solid var(--shikra-light-border-color);
+}
+
+/* Specific page styles */
+
+/* Dashboard page */
+#threatChart {
+    max-height: 300px; /* Ensure chart is not too tall */
+}
+
+/* Analysis Detail page */
+.threat-score {
+    font-size: 2.5rem; /* Make score prominent */
+    font-weight: bold;
+}
+.ioc-item {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+    background-color: #e9ecef; /* Light grey for IOC items */
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    margin: 0.25rem 0;
+    display: inline-block; /* Allow wrapping */
+    word-break: break-all; /* Prevent long IOCs from breaking layout */
+}
+.timeline .d-flex {
+    position: relative;
+    padding-left: 20px; /* Space for timeline marker */
+}
+.timeline .d-flex::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--shikra-secondary-color); /* Or use severity color */
+}
+
+/* Analysis Progress page */
+.progress-large {
+    height: 2.5rem; /* Make progress bar more visible */
+    font-size: 1rem;
+}
+
+/* Admin Dashboard */
+.admin-dashboard .card {
+    margin-bottom: 1.5rem;
+}
+
+/* Utility classes for threat/score colors (assumes Jinja filters or context processors) */
+.text-critical { color: var(--shikra-danger-color) !important; }
+.text-high { color: #fd7e14 !important; } /* Orange for high */
+.text-medium { color: var(--shikra-warning-color) !important; }
+.text-low { color: var(--shikra-info-color) !important; }
+.text-safe { color: var(--shikra-success-color) !important; }
+
+.bg-critical { background-color: var(--shikra-danger-color) !important; color: white; }
+.bg-high { background-color: #fd7e14 !important; color: white; }
+.bg-medium { background-color: var(--shikra-warning-color) !important; color: black; } /* Ensure text readability */
+.bg-low { background-color: var(--shikra-info-color) !important; color: black; }
+.bg-safe { background-color: var(--shikra-success-color) !important; color: white; }
+.bg-unknown { background-color: var(--shikra-secondary-color) !important; color: white; }
+
+
+/* Responsive Design Adjustments */
+@media (max-width: 768px) {
+    .navbar-nav {
+        margin-top: 0.5rem;
+    }
+    .dashboard-container, main.container { /* dashboard-container class not used in provided HTML */
+        padding: 1rem;
+    }
+    h1 {
+        font-size: 1.75rem;
+    }
+    .card-body, .card-header {
+        padding: 0.75rem;
+    }
+}
+
+/* Print Styles */
+@media print {
+    body {
+        background-color: white !important;
+        color: black !important;
+    }
+    .navbar, footer, .btn, .alert-dismissible .btn-close {
+        display: none !important; /* Hide non-essential elements for print */
+    }
+    .card {
+        border: 1px solid #ccc !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+    }
+    main.container {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
+    a[href^="http"]:after {
+        content: " (" attr(href) ")"; /* Show URLs for external links */
+        font-size: 0.8em;
+    }
+    .table, .table td, .table th {
+        border-color: #666 !important;
+    }
+    .badge {
+        border: 1px solid #666;
+        background-color: white !important;
+        color: black !important;
+    }
+}

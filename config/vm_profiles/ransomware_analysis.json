@@ -1,0 +1,474 @@
+{
+  "profile_name": "ransomware_analysis",
+  "profile_version": "1.0.0",
+  "description": "Specialized VM configuration optimized for ransomware analysis with enhanced file monitoring",
+  "created": "2025-01-01",
+  "last_updated": "2025-01-01",
+  "parent_profile": "evasive_malware",
+
+  "vm_configuration": {
+    "hardware": {
+      "cpu_cores": 4,
+      "memory_mb": 6144,
+      "disk_size_gb": 100,
+      "network_adapters": 1,
+      "architecture": "x64",
+      "additional_storage": [
+        {
+          "name": "data_drive",
+          "size_gb": 50,
+          "mount_point": "D:",
+          "file_system": "NTFS"
+        },
+        {
+          "name": "backup_drive", 
+          "size_gb": 30,
+          "mount_point": "E:",
+          "file_system": "NTFS"
+        }
+      ]
+    },
+    "guest_os": {
+      "type": "windows",
+      "version": "Windows 10",
+      "edition": "Professional",
+      "build": "19045",
+      "language": "en-US",
+      "timezone": "Eastern Standard Time"
+    },
+    "credentials": {
+      "username": "RansomwareAnalyst",
+      "password": "Secure!2025Analysis",
+      "auto_login": true
+    }
+  },
+
+  "stealth_configuration": {
+    "anti_detection": {
+      "hide_hypervisor_flag": true,
+      "custom_cpu_model": "host",
+      "cpu_features": ["-vmx", "-hypervisor", "-svm"],
+      "randomize_mac": true,
+      "use_localtime_rtc": true,
+      "disable_hpet": false,
+      "machine_type": "q35"
+    },
+    "smbios_spoofing": {
+      "enable_spoofing": true,
+      "system_manufacturer": "HP",
+      "system_product_name": "EliteBook 850 G8",
+      "system_version": "1.0",
+      "system_serial_number": "5CD1234567",
+      "bios_vendor": "HP",
+      "bios_version": "S70 Ver. 01.10.00",
+      "bios_release_date": "09/15/2023",
+      "board_manufacturer": "HP",
+      "board_product_name": "887B",
+      "chassis_type": "10"
+    }
+  },
+
+  "monitoring_configuration": {
+    "procmon": {
+      "enabled": true,
+      "config_file": "config/procmon/procmon_config.pmc",
+      "behavioral_filters": "config/procmon/behavioral_filters.json",
+      "noise_filters": "config/procmon/noise_filters.json",
+      "malware_patterns": "config/procmon/malware_patterns.json",
+      "auto_start": true,
+      "duration_seconds": 1800,
+      "filter_level": "conservative",
+      "export_format": "csv",
+      "log_directory": "C:\\RansomwareAnalysis\\Logs",
+      "max_log_size_mb": 2000,
+      "enable_file_integrity_monitoring": true,
+      "monitor_shadow_copies": true
+    },
+    "network_capture": {
+      "enabled": true,
+      "interface": "auto",
+      "capture_filter": "not (host 192.168.100.1 or broadcast)",
+      "duration_seconds": 1800,
+      "max_capture_size_mb": 500,
+      "output_directory": "logs/network",
+      "focus_on_c2_traffic": true
+    },
+    "file_system_monitoring": {
+      "enabled": true,
+      "real_time_monitoring": true,
+      "monitor_directories": [
+        "C:\\Users\\RansomwareAnalyst\\Documents",
+        "C:\\Users\\RansomwareAnalyst\\Desktop", 
+        "C:\\Users\\RansomwareAnalyst\\Pictures",
+        "C:\\Users\\RansomwareAnalyst\\Downloads",
+        "D:\\TestFiles",
+        "E:\\BackupFiles"
+      ],
+      "file_integrity_checking": true,
+      "backup_before_modification": true,
+      "track_file_extensions": true
+    },
+    "registry_monitoring": {
+      "enabled": true,
+      "real_time": true,
+      "focus_on_persistence": true,
+      "monitor_keys": [
+        "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+        "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+        "HKLM\\System\\CurrentControlSet\\Services",
+        "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System"
+      ],
+      "backup_registry": true
+    }
+  },
+
+  "analysis_configuration": {
+    "behavioral_analysis": {
+      "enabled": true,
+      "processor": "shikra.core.modules.monitoring.procmon_processor",
+      "config_overrides": {
+        "behavioral_thresholds": {
+          "mass_file_modification": {"threshold": 20, "time_window_seconds": 120},
+          "ransomware_extension_creation": {"threshold": 5, "time_window_seconds": 60},
+          "shadow_copy_deletion": {"threshold": 1, "time_window_seconds": 30},
+          "registry_persistence": {"threshold": 3, "time_window_seconds": 180}
+        },
+        "ransomware_specific": {
+          "track_file_encryption": true,
+          "monitor_crypto_apis": true,
+          "detect_ransom_notes": true,
+          "track_wallpaper_changes": true,
+          "monitor_service_manipulation": true
+        }
+      }
+    },
+    "file_analysis": {
+      "enabled": true,
+      "track_file_modifications": true,
+      "calculate_file_entropy": true,
+      "detect_file_type_changes": true,
+      "monitor_file_permissions": true,
+      "backup_original_files": true
+    },
+    "network_analysis": {
+      "enabled": true,
+      "processor": "shikra.analysis.modules.analysis.network_analysis",
+      "focus_areas": {
+        "c2_communication": true,
+        "tor_traffic": true,
+        "bitcoin_communication": true,
+        "payment_sites": true,
+        "key_exchange": true
+      }
+    },
+    "crypto_analysis": {
+      "enabled": true,
+      "monitor_crypto_libraries": true,
+      "detect_key_generation": true,
+      "track_encryption_calls": true,
+      "analyze_random_generation": true
+    }
+  },
+
+  "test_environment_setup": {
+    "populate_directories": {
+      "documents": {
+        "enabled": true,
+        "file_types": [".docx", ".xlsx", ".pptx", ".pdf", ".txt"],
+        "file_count": 50,
+        "directory": "C:\\Users\\RansomwareAnalyst\\Documents"
+      },
+      "pictures": {
+        "enabled": true,
+        "file_types": [".jpg", ".png", ".bmp", ".gif"],
+        "file_count": 30,
+        "directory": "C:\\Users\\RansomwareAnalyst\\Pictures"
+      },
+      "data_drive": {
+        "enabled": true,
+        "file_types": [".docx", ".xlsx", ".pdf", ".zip", ".rar"],
+        "file_count": 100,
+        "directory": "D:\\TestFiles",
+        "subdirectories": ["Important", "Archive", "Projects"]
+      },
+      "backup_drive": {
+        "enabled": true,
+        "file_types": [".bak", ".backup", ".old"],
+        "file_count": 25,
+        "directory": "E:\\BackupFiles"
+      }
+    },
+    "decoy_files": {
+      "enabled": true,
+      "honeypot_files": [
+        {
+          "name": "passwords.txt",
+          "location": "C:\\Users\\RansomwareAnalyst\\Desktop",
+          "content": "banking_password=fake123\nemail_password=fake456"
+        },
+        {
+          "name": "wallet.dat",
+          "location": "C:\\Users\\RansomwareAnalyst\\Documents",
+          "content": "fake_bitcoin_wallet_data"
+        },
+        {
+          "name": "company_data.xlsx",
+          "location": "D:\\TestFiles\\Important",
+          "monitor_access": true
+        }
+      ]
+    },
+    "network_shares": {
+      "enabled": true,
+      "shares": [
+        {
+          "name": "SharedDocs",
+          "path": "C:\\SharedFiles",
+          "permissions": "full",
+          "populate": true
+        }
+      ]
+    }
+  },
+
+  "security_configuration": {
+    "windows_security": {
+      "disable_defender": true,
+      "disable_firewall": true,
+      "disable_uac": true,
+      "disable_updates": true,
+      "disable_error_reporting": true,
+      "disable_system_restore": true,
+      "disable_shadow_copies": false,
+      "enable_file_history": false
+    },
+    "analysis_safety": {
+      "snapshot_before_analysis": true,
+      "snapshot_interval_minutes": 10,
+      "revert_after_analysis": true,
+      "isolate_network": true,
+      "monitor_host_resources": true,
+      "backup_critical_files": true
+    },
+    "ransomware_specific_safety": {
+      "backup_test_files": true,
+      "monitor_shadow_copy_deletion": true,
+      "protect_analysis_tools": true,
+      "isolate_payment_networks": true
+    }
+  },
+
+  "automation_configuration": {
+    "pre_analysis_scripts": [
+      {
+        "name": "setup_ransomware_environment",
+        "script": "core/scripts/setup_procmon.ps1",
+        "type": "powershell",
+        "timeout": 300,
+        "required": true
+      },
+      {
+        "name": "populate_test_files",
+        "script": "New-Item -ItemType Directory -Path 'C:\\Users\\RansomwareAnalyst\\Documents\\TestFiles' -Force; 1..50 | ForEach-Object { New-Item -ItemType File -Path \"C:\\Users\\RansomwareAnalyst\\Documents\\TestFiles\\test_$_.txt\" -Force -Value \"Test file content $_ for ransomware analysis\" }; New-Item -ItemType Directory -Path 'D:\\TestFiles' -Force; 1..100 | ForEach-Object { New-Item -ItemType File -Path \"D:\\TestFiles\\data_$_.docx\" -Force }",
+        "type": "powershell_inline",
+        "timeout": 180,
+        "required": true
+      },
+      {
+        "name": "setup_shadow_copies",
+        "script": "vssadmin create shadow /for=C: /autoretry=3",
+        "type": "cmd_inline",
+        "timeout": 120,
+        "required": false
+      },
+      {
+        "name": "configure_file_monitoring",
+        "script": "New-Item -ItemType Directory -Path 'C:\\RansomwareAnalysis\\Backups' -Force; robocopy 'C:\\Users\\RansomwareAnalyst\\Documents' 'C:\\RansomwareAnalysis\\Backups\\Documents' /E /Z /R:1 /W:1 /LOG:C:\\RansomwareAnalysis\\Logs\\backup.log",
+        "type": "cmd_inline",
+        "timeout": 300,
+        "required": false
+      }
+    ],
+    "during_analysis_monitoring": [
+      {
+        "name": "file_integrity_check",
+        "script": "Get-ChildItem 'C:\\Users\\RansomwareAnalyst\\Documents' -Recurse | Get-FileHash | Export-Csv 'C:\\RansomwareAnalysis\\Logs\\file_hashes_during.csv' -NoTypeInformation",
+        "type": "powershell_inline",
+        "interval_seconds": 300,
+        "timeout": 60
+      },
+      {
+        "name": "shadow_copy_monitor",
+        "script": "vssadmin list shadows | Out-File 'C:\\RansomwareAnalysis\\Logs\\shadow_copies_status.txt' -Append",
+        "type": "cmd_inline",
+        "interval_seconds": 180,
+        "timeout": 30
+      }
+    ],
+    "post_analysis_scripts": [
+      {
+        "name": "collect_ransomware_artifacts",
+        "script": "Get-ChildItem C:\\RansomwareAnalysis\\Logs\\* -Recurse | Copy-Item -Destination C:\\Windows\\Temp\\ -Force; Get-ChildItem C:\\Users\\RansomwareAnalyst\\Desktop\\*.txt | Where-Object {$_.Name -match 'readme|decrypt|ransom|restore'} | Copy-Item -Destination C:\\Windows\\Temp\\ -Force; Get-ChildItem C:\\Users\\RansomwareAnalyst\\Documents\\*.txt | Where-Object {$_.Name -match 'readme|decrypt|ransom|restore'} | Copy-Item -Destination C:\\Windows\\Temp\\ -Force",
+        "type": "powershell_inline",
+        "timeout": 300,
+        "required": true
+      },
+      {
+        "name": "analyze_file_changes",
+        "script": "Get-ChildItem 'C:\\Users\\RansomwareAnalyst\\Documents' -Recurse | Get-FileHash | Export-Csv 'C:\\Windows\\Temp\\file_hashes_after.csv' -NoTypeInformation; Compare-Object (Import-Csv 'C:\\RansomwareAnalysis\\Logs\\file_hashes_during.csv') (Import-Csv 'C:\\Windows\\Temp\\file_hashes_after.csv') -Property Hash | Export-Csv 'C:\\Windows\\Temp\\file_changes.csv' -NoTypeInformation",
+        "type": "powershell_inline",
+        "timeout": 180,
+        "required": true
+      },
+      {
+        "name": "collect_registry_changes",
+        "script": "reg export HKCU\\Software C:\\Windows\\Temp\\registry_hkcu_after.reg /y; reg export HKLM\\Software C:\\Windows\\Temp\\registry_hklm_after.reg /y",
+        "type": "cmd_inline",
+        "timeout": 120,
+        "required": true
+      }
+    ]
+  },
+
+  "sample_handling": {
+    "upload_directory": "C:\\Samples",
+    "execution_timeout": 900,
+    "auto_execute": false,
+    "execution_parameters": [],
+    "file_extensions_to_execute": [".exe", ".com", ".scr", ".bat", ".cmd", ".msi", ".dll", ".ps1", ".vbs", ".js"],
+    "analysis_duration": 1800,
+    "interaction_simulation": {
+      "enabled": true,
+      "simulate_file_access": true,
+      "simulate_network_activity": true,
+      "simulate_user_login": true
+    }
+  },
+
+  "reporting_configuration": {
+    "formats": ["json", "html", "text"],
+    "include_screenshots": true,
+    "include_network_pcap": true,
+    "include_memory_dump": false,
+    "include_procmon_logs": true,
+    "include_file_changes": true,
+    "include_registry_diff": true,
+    "include_ransom_notes": true,
+    "compress_results": true,
+    "ransomware_specific_reporting": {
+      "encryption_timeline": true,
+      "file_modification_statistics": true,
+      "ransom_note_analysis": true,
+      "payment_demand_extraction": true,
+      "crypto_currency_addresses": true,
+      "family_identification": true
+    }
+  },
+
+  "integration_points": {
+    "behavioral_processor": {
+      "module": "shikra.core.modules.monitoring.procmon_processor",
+      "config_files": [
+        "config/procmon/behavioral_filters.json",
+        "config/procmon/noise_filters.json",
+        "config/procmon/malware_patterns.json"
+      ],
+      "config_overrides": {
+        "ransomware_detection": {
+          "enabled": true,
+          "sensitivity": "high",
+          "family_detection": true
+        }
+      }
+    },
+    "vm_controller": {
+      "copy_to_vm": "shikra.core.modules.vm_controller.copy_to_vm",
+      "copy_from_vm": "shikra.core.modules.vm_controller.copy_from_vm",
+      "run_in_vm": "shikra.core.modules.vm_controller.run_in_vm",
+      "stealth": "shikra.core.modules.vm_controller.stealth",
+      "snapshot": "shikra.core.modules.vm_controller.snapshot"
+    },
+    "analysis_pipeline": {
+      "behavioral": "shikra.analysis.modules.analysis.behavioral",
+      "network": "shikra.analysis.modules.analysis.network_analysis",
+      "file_analysis": "shikra.analysis.modules.analysis.file_analysis",
+      "crypto_analysis": "shikra.analysis.modules.analysis.crypto_analysis"
+    },
+    "reporting": {
+      "generator": "shikra.reporting.modules.reporting.report_generator",
+      "visualizer": "shikra.reporting.modules.reporting.visualizer",
+      "ransomware_reporter": "shikra.reporting.modules.reporting.ransomware_reporter"
+    }
+  },
+
+  "thresholds_and_limits": {
+    "analysis": {
+      "max_analysis_time_seconds": 3600,
+      "max_procmon_events": 3000000,
+      "max_network_packets": 1000000,
+      "max_log_file_size_mb": 2000,
+      "file_modification_alert_threshold": 10
+    },
+    "resources": {
+      "max_cpu_usage_percent": 85,
+      "max_memory_usage_percent": 80,
+      "max_disk_usage_percent": 90
+    },
+    "detection": {
+      "ransomware_score_threshold": 80,
+      "file_encryption_threshold": 15,
+      "suspicious_activity_threshold": 40,
+      "noise_filter_aggressiveness": 75
+    },
+    "ransomware_specific": {
+      "max_files_to_encrypt_simulation": 1000,
+      "encryption_detection_window_seconds": 300,
+      "ransom_note_detection_sensitivity": 90
+    }
+  },
+
+  "advanced_features": {
+    "ransomware_family_detection": {
+      "enabled": true,
+      "known_families": [
+        "wannacry", "ryuk", "lockbit", "conti", "dharma", 
+        "phobos", "makop", "sodinokibi", "revil", "maze"
+      ],
+      "signature_matching": true,
+      "behavioral_clustering": true
+    },
+    "crypto_analysis": {
+      "enabled": true,
+      "detect_encryption_algorithms": true,
+      "monitor_key_generation": true,
+      "track_crypto_libraries": true
+    },
+    "payment_analysis": {
+      "enabled": true,
+      "extract_bitcoin_addresses": true,
+      "extract_payment_amounts": true,
+      "track_tor_domains": true,
+      "analyze_ransom_notes": true
+    }
+  },
+
+  "error_handling": {
+    "retry_attempts": 3,
+    "retry_delay_seconds": 15,
+    "continue_on_non_critical_errors": true,
+    "log_all_errors": true,
+    "revert_vm_on_critical_error": true,
+    "backup_analysis_data": true
+  },
+
+  "compatibility": {
+    "qemu_version": "6.0+",
+    "libvirt_version": "7.0+",
+    "supported_host_os": ["linux"],
+    "required_tools": ["procmon.exe", "tshark", "volatility3", "yara"],
+    "minimum_host_memory_gb": 12,
+    "minimum_host_disk_gb": 250,
+    "recommended_host_cpu_cores": 6,
+    "specialized_tools": ["ransomware_family_detector", "crypto_analyzer"]
+  }
+}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Progress - Shikra{% endblock %}
+
+{% block additional_css %}
+<style>
+.progress-large {
+    height: 2rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-spinner fa-spin"></i> Analysis in Progress</h3>
+            </div>
+            <div class="card-body text-center">
+                <h4>{{ status.filename }}</h4>
+                <p class="text-muted">Analysis ID: {{ analysis_id }}</p>
+                
+                <div class="mb-4">
+                    <div class="progress progress-large">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" 
+                             style="width: {{ status.progress }}%"
+                             id="progressBar">
+                            {{ status.progress }}%
+                        </div>
+                    </div>
+                </div>
+                
+                <h5 id="currentPhase">{{ status.current_phase }}</h5>
+                <p class="text-muted">Started: {{ status.started|datetime }}</p>
+                
+                <div class="mt-4">
+                    <button class="btn btn-outline-primary" onclick="location.reload()">
+                        <i class="fas fa-sync-alt"></i> Refresh Status
+                    </button>
+                    <a href="{{ url_for('analysis_list') }}" class="btn btn-secondary">
+                        <i class="fas fa-list"></i> Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="alert alert-info mt-4">
+            <i class="fas fa-info-circle"></i>
+            <strong>Real-time Updates:</strong> This page will automatically update when the analysis completes.
+            You can safely navigate away and return later.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block additional_js %}
+<script>
+// WebSocket connection for real-time updates
+if (typeof io !== 'undefined') {
+    const socket = io();
+    
+    socket.emit('join_analysis', { analysis_id: '{{ analysis_id }}' });
+    
+    socket.on('analysis_progress', function(data) {
+        if (data.analysis_id === '{{ analysis_id }}') {
+            document.getElementById('progressBar').style.width = data.progress + '%';
+            document.getElementById('progressBar').textContent = data.progress + '%';
+            document.getElementById('currentPhase').textContent = data.phase;
+        }
+    });
+    
+    socket.on('analysis_complete', function(data) {
+        if (data.analysis_id === '{{ analysis_id }}') {
+            window.location.href = "{{ url_for('analysis_detail', analysis_id=analysis_id) }}";
+        }
+    });
+}
+
+// Fallback: Auto-refresh every 10 seconds
+setInterval(function() {
+    fetch('{{ url_for("api_status", analysis_id=analysis_id) }}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'completed') {
+                window.location.href = "{{ url_for('analysis_detail', analysis_id=analysis_id) }}";
+            } else if (data.status === 'running') {
+                document.getElementById('progressBar').style.width = data.progress + '%';
+                document.getElementById('progressBar').textContent = data.progress + '%';
+                document.getElementById('currentPhase').textContent = data.current_phase;
+            }
+        })
+        .catch(error => console.error('Status update error:', error));
+}, 10000);
+</script>
+{% endblock %}

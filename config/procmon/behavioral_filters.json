@@ -1,0 +1,525 @@
+{
+  "filter_version": "1.0.0",
+  "description": "Advanced behavioral analysis filter rules for Shikra ProcMon processor",
+  "last_updated": "2025-01-01",
+
+  "system_processes_filter": {
+    "always_filter": [
+      "system",
+      "registry",
+      "smss.exe",
+      "csrss.exe", 
+      "wininit.exe",
+      "services.exe",
+      "lsass.exe",
+      "winlogon.exe",
+      "fontdrvhost.exe",
+      "dwm.exe",
+      "wincompositor.exe",
+      "applicationframehost.exe",
+      "runtimebroker.exe",
+      "taskhostw.exe",
+      "sihost.exe",
+      "ctfmon.exe",
+      "searchindexer.exe",
+      "wmiprvse.exe",
+      "dllhost.exe",
+      "conhost.exe",
+      "spoolsv.exe",
+      "audiodg.exe",
+      "wlanext.exe",
+      "dashost.exe",
+      "unsecapp.exe",
+      "winrshost.exe",
+      "csrss.exe",
+      "lsm.exe",
+      "sppsvc.exe",
+      "msdtc.exe"
+    ],
+    "conditionally_filter": [
+      "explorer.exe",
+      "svchost.exe",
+      "msiexec.exe",
+      "regsvr32.exe",
+      "rundll32.exe",
+      "cmd.exe",
+      "powershell.exe",
+      "powershell_ise.exe",
+      "wscript.exe",
+      "cscript.exe",
+      "wuauclt.exe",
+      "mshta.exe",
+      "bitsadmin.exe",
+      "certutil.exe",
+      "sc.exe",
+      "net.exe",
+      "netsh.exe",
+      "reg.exe",
+      "regedit.exe",
+      "tasklist.exe",
+      "taskkill.exe",
+      "wevtutil.exe",
+      "bcdedit.exe",
+      "vssadmin.exe",
+      "wbadmin.exe",
+      "schtasks.exe",
+      "at.exe",
+      "whoami.exe",
+      "systeminfo.exe",
+      "ipconfig.exe",
+      "ping.exe",
+      "nslookup.exe",
+      "netstat.exe"
+    ],
+    "never_filter": [
+      "notepad.exe",
+      "calc.exe",
+      "mspaint.exe",
+      "wordpad.exe",
+      "write.exe",
+      "charmap.exe",
+      "magnify.exe",
+      "osk.exe",
+      "narrator.exe",
+      "sndrec32.exe",
+      "soundrecorder.exe"
+    ],
+    "suspicious_indicators": {
+      "unexpected_locations": [
+        "C:\\\\Windows\\\\Temp\\\\",
+        "C:\\\\Users\\\\.*\\\\AppData\\\\Local\\\\Temp\\\\",
+        "C:\\\\ProgramData\\\\",
+        "C:\\\\Users\\\\Public\\\\",
+        "C:\\\\Temp\\\\",
+        "C:\\\\$Recycle\\.Bin\\\\"
+      ],
+      "suspicious_arguments": [
+        "-enc",
+        "-encoded",
+        "-hidden",
+        "-windowstyle hidden",
+        "-executionpolicy bypass",
+        "-noprofile",
+        "-noninteractive",
+        "/accepteula",
+        "/s",
+        "/q",
+        "/quiet",
+        "/silent"
+      ]
+    }
+  },
+
+  "file_operation_filters": {
+    "noise_file_paths": {
+      "system_directories": [
+        "C:\\\\Windows\\\\System32\\\\",
+        "C:\\\\Windows\\\\SysWOW64\\\\",
+        "C:\\\\Windows\\\\WinSxS\\\\",
+        "C:\\\\Windows\\\\assembly\\\\",
+        "C:\\\\Windows\\\\Microsoft.NET\\\\",
+        "C:\\\\Windows\\\\ServiceProfiles\\\\",
+        "C:\\\\Program Files\\\\Windows Defender\\\\",
+        "C:\\\\Program Files (x86)\\\\Windows Defender\\\\",
+        "C:\\\\Program Files\\\\Common Files\\\\microsoft shared\\\\",
+        "C:\\\\Program Files (x86)\\\\Common Files\\\\microsoft shared\\\\",
+        "C:\\\\Windows\\\\Installer\\\\",
+        "C:\\\\Windows\\\\SoftwareDistribution\\\\",
+        "C:\\\\Windows\\\\Boot\\\\",
+        "C:\\\\Windows\\\\Globalization\\\\",
+        "C:\\\\Windows\\\\IME\\\\",
+        "C:\\\\Windows\\\\L2Schemas\\\\",
+        "C:\\\\Windows\\\\LiveKernelReports\\\\",
+        "C:\\\\Windows\\\\Panther\\\\"
+      ],
+      "temp_directories": [
+        "C:\\\\Windows\\\\Temp\\\\",
+        "C:\\\\Windows\\\\Logs\\\\",
+        "C:\\\\Windows\\\\Prefetch\\\\",
+        "\\\\AppData\\\\Local\\\\Temp\\\\",
+        "\\\\AppData\\\\Local\\\\Microsoft\\\\Windows\\\\INetCache\\\\",
+        "\\\\AppData\\\\Local\\\\Microsoft\\\\Windows\\\\Temporary Internet Files\\\\",
+        "\\\\AppData\\\\Local\\\\Microsoft\\\\Windows\\\\WebCache\\\\",
+        "\\\\AppData\\\\Local\\\\CrashDumps\\\\",
+        "\\\\AppData\\\\Local\\\\Microsoft\\\\CLR_v.*\\\\",
+        "\\\\AppData\\\\Local\\\\Packages\\\\.*\\\\TempState\\\\",
+        "\\\\AppData\\\\Roaming\\\\Microsoft\\\\Windows\\\\Recent\\\\",
+        "\\\\AppData\\\\Roaming\\\\Microsoft\\\\Office\\\\Recent\\\\"
+      ],
+      "log_and_cache_files": [
+        "\\.tmp$",
+        "\\.log$",
+        "\\.etl$", 
+        "\\.pf$",
+        "\\.dmp$",
+        "\\.old$",
+        "\\.cache$",
+        "\\.dat$",
+        "\\.lock$",
+        "\\.idx$",
+        "\\.bak$",
+        "\\.~.*$",
+        "\\._.*$",
+        "\\.partial$",
+        "\\.crdownload$",
+        "\\.download$"
+      ],
+      "system_files": [
+        "\\\\pagefile\\.sys$",
+        "\\\\hiberfil\\.sys$",
+        "\\\\swapfile\\.sys$",
+        "\\\\.thumbs\\.db$",
+        "\\\\desktop\\.ini$",
+        "\\\\.DS_Store$",
+        "\\\\NTUSER\\.DAT.*$",
+        "\\\\UsrClass\\.dat.*$",
+        "\\\\SAM$",
+        "\\\\SYSTEM$",
+        "\\\\SOFTWARE$",
+        "\\\\SECURITY$",
+        "\\\\DEFAULT$"
+      ]
+    },
+    "interesting_file_operations": {
+      "always_monitor": [
+        "CreateFile.*\\.(exe|dll|scr|bat|cmd|ps1|vbs|js|jar)$",
+        "CreateFile.*\\.(doc|docx|xls|xlsx|ppt|pptx|pdf)$",
+        "WriteFile.*\\.(exe|dll|scr|bat|cmd|ps1|vbs|js|jar)$",
+        "DeletePath.*\\.(exe|dll|doc|docx|xls|xlsx|ppt|pptx|pdf)$",
+        "SetInformation.*SecurityDescriptor",
+        "SetInformation.*BasicInformation",
+        "SetInformation.*FileNameInformation"
+      ],
+      "suspicious_patterns": [
+        "CreateFile.*\\\\(temp|tmp)\\\\.*\\.(exe|dll|scr)$",
+        "CreateFile.*\\\\AppData\\\\.*\\.(exe|dll|scr)$",
+        "CreateFile.*\\\\ProgramData\\\\.*\\.(exe|dll)$",
+        "CreateFile.*\\\\Users\\\\Public\\\\.*\\.(exe|dll|bat|cmd)$",
+        "WriteFile.*readme.*\\.(txt|html|hta)$",
+        "WriteFile.*decrypt.*\\.(txt|html|hta)$",
+        "WriteFile.*ransom.*\\.(txt|html|hta)$",
+        "WriteFile.*recovery.*\\.(txt|html|hta)$"
+      ]
+    }
+  },
+
+  "registry_operation_filters": {
+    "noise_registry_paths": [
+      "HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Services\\\\Tcpip\\\\Parameters\\\\Interfaces\\\\",
+      "HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Services\\\\lanmanserver\\\\Shares\\\\",
+      "HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Installer\\\\",
+      "HKLM\\\\SOFTWARE\\\\Classes\\\\",
+      "HKCU\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\RecentDocs\\\\",
+      "HKCU\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\RunMRU\\\\",
+      "HKCU\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\TypedPaths\\\\",
+      "HKCU\\\\SOFTWARE\\\\Microsoft\\\\Internet Explorer\\\\",
+      "HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Perflib\\\\",
+      "HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Memory Management\\\\",
+      "\\\\SessionInformation\\\\",
+      "\\\\MuiCache\\\\",
+      "\\\\UsrClass\\.dat",
+      "\\\\ComDlg32\\\\",
+      "\\\\Explorer\\\\StreamMRU\\\\",
+      "\\\\Volatile Environment\\\\",
+      "HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Control\\\\WMI\\\\",
+      "HKLM\\\\SOFTWARE\\\\Microsoft\\\\Ole\\\\",
+      "HKLM\\\\SOFTWARE\\\\Microsoft\\\\Rpc\\\\",
+      "HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Control\\\\Nls\\\\",
+      "HKCU\\\\Control Panel\\\\",
+      "HKCU\\\\Environment\\\\",
+      "HKCU\\\\Keyboard Layout\\\\",
+      "HKCU\\\\Printers\\\\",
+      "HKCU\\\\Network\\\\",
+      "HKLM\\\\HARDWARE\\\\",
+      "HKLM\\\\SAM\\\\",
+      "HKLM\\\\SECURITY\\\\"
+    ],
+    "critical_registry_paths": {
+      "persistence_keys": [
+        "HKCU\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run",
+        "HKLM\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run",
+        "HKCU\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnce",
+        "HKLM\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnce",
+        "HKLM\\\\System\\\\CurrentControlSet\\\\Services\\\\",
+        "HKLM\\\\Software\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Winlogon\\\\",
+        "HKLM\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\Explorer\\\\Run",
+        "HKCU\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\Explorer\\\\Run"
+      ],
+      "security_keys": [
+        "HKLM\\\\Software\\\\Microsoft\\\\Security Center\\\\",
+        "HKLM\\\\Software\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\",
+        "HKLM\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\System\\\\",
+        "HKLM\\\\System\\\\CurrentControlSet\\\\Control\\\\SafeBoot\\\\",
+        "HKLM\\\\System\\\\CurrentControlSet\\\\Services\\\\SharedAccess\\\\Parameters\\\\FirewallPolicy\\\\"
+      ],
+      "boot_keys": [
+        "HKLM\\\\System\\\\CurrentControlSet\\\\Control\\\\BootVerificationProgram\\\\",
+        "HKLM\\\\BCD.*\\\\",
+        "HKLM\\\\System\\\\CurrentControlSet\\\\Control\\\\SystemStartOptions\\\\"
+      ]
+    }
+  },
+
+  "network_operation_filters": {
+    "noise_network_destinations": [
+      "127\\.0\\.0\\.1",
+      "localhost",
+      "::1",
+      "0\\.0\\.0\\.0",
+      "169\\.254\\..*",
+      "224\\.0\\.0\\..*",
+      "239\\.255\\.255\\.250",
+      "255\\.255\\.255\\.255",
+      ".*\\.microsoft\\.com",
+      ".*\\.windows\\.com",
+      ".*\\.windowsupdate\\.com",
+      ".*\\.live\\.com",
+      ".*\\.msftncsi\\.com",
+      ".*\\.bing\\.com",
+      ".*\\.office\\.com",
+      ".*\\.office365\\.com",
+      ".*\\.skype\\.com",
+      ".*\\.microsoftonline\\.com",
+      ".*\\.azure\\.com",
+      ".*\\.azureedge\\.net"
+    ],
+    "interesting_network_activity": {
+      "suspicious_destinations": [
+        ".*\\.onion",
+        ".*\\.bit",
+        ".*\\.bazar",
+        "pastebin\\.com",
+        "paste\\.ee",
+        "ghostbin\\.co",
+        "mega\\.(nz|io|co\\.nz)",
+        "anonfile\\.com",
+        "sendspace\\.com",
+        "transfer\\.sh",
+        "checkip\\.dyndns\\.org",
+        "icanhazip\\.com",
+        "ipinfo\\.io"
+      ],
+      "suspicious_ports": [
+        443,
+        80,
+        8080,
+        8443,
+        9050,
+        9051,
+        1080,
+        4444,
+        5555,
+        6666,
+        7777,
+        8888,
+        9999
+      ]
+    }
+  },
+
+  "behavioral_thresholds": {
+    "time_windows": {
+      "short_burst": 30,
+      "medium_window": 300,
+      "long_analysis": 1800
+    },
+    "file_operations": {
+      "mass_modification_threshold": 50,
+      "rapid_creation_threshold": 20,
+      "deletion_burst_threshold": 30,
+      "time_window_seconds": 300,
+      "high_confidence_threshold": 100,
+      "extension_diversity_threshold": 5
+    },
+    "registry_operations": {
+      "rapid_modification_threshold": 20,
+      "persistence_key_threshold": 3,
+      "security_tampering_threshold": 5,
+      "time_window_seconds": 180
+    },
+    "process_operations": {
+      "rapid_creation_threshold": 10,
+      "suspicious_name_threshold": 3,
+      "impersonation_threshold": 2,
+      "time_window_seconds": 60
+    },
+    "network_operations": {
+      "connection_burst_threshold": 15,
+      "unique_destination_threshold": 10,
+      "suspicious_port_threshold": 5,
+      "time_window_seconds": 120
+    }
+  },
+
+  "operation_priorities": {
+    "critical": [
+      "ProcessStart",
+      "ProcessStop", 
+      "CreateFile",
+      "WriteFile",
+      "DeletePath",
+      "RegSetValue",
+      "RegCreateKey",
+      "RegDeleteKey",
+      "TCP Connect",
+      "UDP Send"
+    ],
+    "important": [
+      "ReadFile",
+      "QueryInformation",
+      "RegOpenKey",
+      "RegQueryValue",
+      "Thread Create",
+      "Load Image",
+      "SetInformation"
+    ],
+    "informational": [
+      "RegCloseKey",
+      "CloseFile",
+      "Process Statistics",
+      "QueryDirectory",
+      "QueryVolumeInformation"
+    ],
+    "noise": [
+      "QueryStandardInformation",
+      "QueryNetworkOpenInformation",
+      "QueryBasicInformation",
+      "QueryInternalInformation",
+      "QueryEaInformation",
+      "QueryPositionInformation",
+      "FASTIO_CHECK_IF_POSSIBLE",
+      "IRP_MJ_DIRECTORY_CONTROL"
+    ]
+  },
+
+  "result_filtering": {
+    "always_keep": [
+      "SUCCESS",
+      "ACCESS DENIED",
+      "SHARING VIOLATION", 
+      "NAME NOT FOUND",
+      "PATH NOT FOUND",
+      "BUFFER OVERFLOW",
+      "PRIVILEGE NOT HELD",
+      "INVALID PARAMETER",
+      "FILE LOCKED WITH ONLY READERS",
+      "FILE LOCKED WITH WRITERS"
+    ],
+    "conditionally_keep": [
+      "NO MORE FILES",
+      "NO SUCH FILE",
+      "NOT SUPPORTED",
+      "INVALID DEVICE REQUEST",
+      "BAD NETWORK PATH",
+      "NETWORK ACCESS DENIED",
+      "TOO MANY OPENED FILES"
+    ],
+    "always_filter": [
+      "FAST IO DISALLOWED",
+      "REPARSE",
+      "OPLOCK BREAK IN PROGRESS",
+      "FILE LOCK CONFLICT",
+      "NOTIFY CLEANUP",
+      "NOTIFY ENUM DIR",
+      "DELETE PENDING",
+      "DIRECTORY NOT EMPTY",
+      "NOT A REPARSE POINT",
+      "REPARSE TAG INVALID"
+    ]
+  },
+
+  "time_correlation": {
+    "enable_time_correlation": true,
+    "correlation_window_seconds": 30,
+    "ignore_repetitive_operations": true,
+    "repetitive_threshold": 5,
+    "burst_detection": {
+      "enable": true,
+      "time_window": 10,
+      "operation_threshold": 20
+    },
+    "process_lifetime_tracking": {
+      "enable": true,
+      "track_child_processes": true,
+      "correlation_depth": 3
+    }
+  },
+
+  "advanced_filtering": {
+    "machine_learning_hints": {
+      "suspicious_file_entropy": {
+        "enable": true,
+        "entropy_threshold": 7.5,
+        "file_size_min": 1024
+      },
+      "process_name_randomness": {
+        "enable": true,
+        "randomness_threshold": 0.8,
+        "min_length": 6
+      },
+      "command_line_obfuscation": {
+        "enable": true,
+        "base64_detection": true,
+        "hex_encoding_detection": true,
+        "unicode_obfuscation": true
+      }
+    },
+    "context_awareness": {
+      "parent_process_context": true,
+      "user_context_filtering": true,
+      "session_context_tracking": true,
+      "elevation_context_tracking": true
+    },
+    "adaptive_thresholds": {
+      "enable": true,
+      "learning_period_hours": 24,
+      "adjustment_factor": 0.1,
+      "min_samples": 100
+    }
+  },
+
+  "whitelist_overrides": {
+    "trusted_processes": [
+      "C:\\\\Windows\\\\System32\\\\svchost\\.exe",
+      "C:\\\\Windows\\\\System32\\\\lsass\\.exe",
+      "C:\\\\Windows\\\\System32\\\\services\\.exe",
+      "C:\\\\Windows\\\\System32\\\\winlogon\\.exe",
+      "C:\\\\Windows\\\\System32\\\\csrss\\.exe",
+      "C:\\\\Windows\\\\System32\\\\smss\\.exe",
+      "C:\\\\Windows\\\\System32\\\\wininit\\.exe"
+    ],
+    "trusted_signers": [
+      "Microsoft Corporation",
+      "Microsoft Windows",
+      "Microsoft Windows Publisher"
+    ],
+    "development_exceptions": {
+      "enable": false,
+      "trusted_dev_paths": [
+        "C:\\\\dev\\\\",
+        "C:\\\\src\\\\",
+        "C:\\\\projects\\\\"
+      ]
+    }
+  },
+
+  "performance_tuning": {
+    "memory_management": {
+      "max_events_in_memory": 100000,
+      "flush_threshold": 50000,
+      "enable_compression": true
+    },
+    "processing_optimization": {
+      "parallel_processing": true,
+      "worker_threads": 4,
+      "batch_size": 1000,
+      "enable_caching": true
+    },
+    "output_control": {
+      "max_timeline_events": 1000,
+      "max_process_tree_depth": 10,
+      "truncate_long_paths": true,
+      "path_truncate_length": 260
+    }
+  }
+}

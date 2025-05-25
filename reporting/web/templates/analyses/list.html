@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Analyses - Shikra{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-list"></i> Analysis Results</h1>
+    <a href="{{ url_for('sample_submission') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> New Analysis
+    </a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Classification</label>
+                <select name="classification" class="form-select">
+                    <option value="">All Classifications</option>
+                    <option value="CRITICAL" {% if filters.classification == 'CRITICAL' %}selected{% endif %}>Critical</option>
+                    <option value="HIGH" {% if filters.classification == 'HIGH' %}selected{% endif %}>High</option>
+                    <option value="MEDIUM" {% if filters.classification == 'MEDIUM' %}selected{% endif %}>Medium</option>
+                    <option value="LOW" {% if filters.classification == 'LOW' %}selected{% endif %}>Low</option>
+                </select>
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">Min Score</label>
+                <input type="number" name="score_min" class="form-control" 
+                       value="{{ filters.score_min or '' }}" min="0" max="100">
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">Max Score</label>
+                <input type="number" name="score_max" class="form-control" 
+                       value="{{ filters.score_max or '' }}" min="0" max="100">
+            </div>
+            
+            <div class="col-md-3">
+                <label class="form-label">Sort By</label>
+                <select name="sort" class="form-select">
+                    <option value="timestamp" {% if filters.sort == 'timestamp' %}selected{% endif %}>Date</option>
+                    <option value="score" {% if filters.sort == 'score' %}selected{% endif %}>Score</option>
+                    <option value="filename" {% if filters.sort == 'filename' %}selected{% endif %}>Filename</option>
+                </select>
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if analyses %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Sample</th>
+                        <th>Size</th>
+                        <th>Hash</th>
+                        <th>Score</th>
+                        <th>Classification</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for analysis in analyses %}
+                    <tr>
+                        <td>
+                            <i class="fas fa-file text-muted"></i>
+                            <strong>{{ analysis.filename }}</strong>
+                        </td>
+                        <td>{{ analysis.size|filesize }}</td>
+                        <td>
+                            <code class="small">{{ analysis.hash|truncate_hash }}</code>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ get_score_color(analysis.score) }}">
+                                {{ analysis.score }}/100
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ get_threat_color(analysis.classification) }}">
+                                {{ analysis.classification }}
+                            </span>
+                        </td>
+                        <td>
+                            <small>{{ analysis.timestamp|datetime }}</small>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('analysis_detail', analysis_id=analysis.id) }}" 
+                                   class="btn btn-outline-primary" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('export_analysis', analysis_id=analysis.id, export_format='json') }}" 
+                                   class="btn btn-outline-secondary" title="Export JSON">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if pagination.pages > 1 %}
+        <nav aria-label="Analysis pagination">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ pagination.page - 1 }}">Previous</a>
+                    </li>
+                {% endif %}
+                
+                {% for page_num in range(1, pagination.pages + 1) %}
+                    {% if page_num == pagination.page %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ pagination.page + 1 }}">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h4>No analyses found</h4>
+            <p class="text-muted">Try adjusting your search criteria or submit a new sample for analysis.</p>
+            <a href="{{ url_for('sample_submission') }}" class="btn btn-primary">
+                <i class="fas fa-upload"></i> Submit Sample
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

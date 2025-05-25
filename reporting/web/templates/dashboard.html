@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Shikra{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-tachometer-alt text-primary"></i>
+            Analysis Dashboard
+        </h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.total_analyses or 0 }}</h4>
+                        <p class="mb-0">Total Analyses</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-chart-bar fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.active_analyses or 0 }}</h4>
+                        <p class="mb-0">Active Analyses</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-spinner fa-2x fa-spin"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.queued_analyses or 0 }}</h4>
+                        <p class="mb-0">Queued</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.completed_today or 0 }}</h4>
+                        <p class="mb-0">Today</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-pie-chart"></i> Threat Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="threatChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-activity"></i> System Health</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Analysis Engine:</span>
+                    <span class="badge bg-success">{{ system_health.analysis_engine or 'Running' }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>CPU Usage:</span>
+                    <span class="badge bg-info">{{ system_health.cpu_usage or 'Normal' }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Memory:</span>
+                    <span class="badge bg-info">{{ system_health.memory_usage or 'Normal' }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Disk Space:</span>
+                    <span class="badge bg-success">{{ system_health.disk_space or 'Normal' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-history"></i> Recent Analyses</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_analyses %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Sample</th>
+                                <th>Score</th>
+                                <th>Classification</th>
+                                <th>Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for analysis in recent_analyses %}
+                            <tr>
+                                <td>
+                                    <i class="fas fa-file"></i>
+                                    {{ analysis.filename[:30] }}{% if analysis.filename|length > 30 %}...{% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ get_score_color(analysis.score) }}">
+                                        {{ analysis.score }}/100
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ get_threat_color(analysis.classification) }}">
+                                        {{ analysis.classification }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ analysis.timestamp|datetime }}</small>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('analysis_detail', analysis_id=analysis.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-4">No recent analyses available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-spinner fa-spin"></i> Active Analyses</h5>
+            </div>
+            <div class="card-body">
+                {% if active_analyses %}
+                    {% for analysis in active_analyses %}
+                    <div class="mb-3 p-2 border rounded">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="fw-bold">{{ analysis.filename[:25] }}...</small>
+                            <small class="text-muted">{{ analysis.progress }}%</small>
+                        </div>
+                        <div class="progress mb-1" style="height: 5px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ analysis.progress }}%"></div>
+                        </div>
+                        <small class="text-muted">{{ analysis.current_phase }}</small>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <p class="text-muted text-center py-4">No active analyses.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block additional_js %}
+<script>
+// Threat Distribution Chart
+const threatData = {{ threat_distribution|tojson }};
+if (Object.keys(threatData).length > 0) {
+    const ctx = document.getElementById('threatChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: Object.keys(threatData),
+            datasets: [{
+                data: Object.values(threatData),
+                backgroundColor: [
+                    '#dc3545', '#fd7e14', '#ffc107', '#28a745', '#6c757d'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

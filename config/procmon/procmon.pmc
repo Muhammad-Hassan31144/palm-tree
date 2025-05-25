@@ -1,0 +1,23 @@
+# Procmon Configuration File (PMC) - Placeholder
+#
+# Purpose:
+# This is a placeholder for a Process Monitor (Procmon) configuration file.
+# The actual .pmc file should be exported from Procmon after configuring
+# the desired filters and settings.
+#
+# Context in Shikra:
+# - Used by core/modules/monitor/ for process monitoring during analysis
+# - Contains filter rules to reduce noise in Procmon logs
+# - Should be configured based on analysis requirements
+#
+# Instructions:
+# 1. Open Process Monitor (Procmon) on a Windows system
+# 2. Configure desired filters (File System, Registry, Process, Network)
+# 3. Export configuration using File -> Export Configuration
+# 4. Replace this placeholder with the exported .pmc file
+#
+# Note: This placeholder should be replaced with an actual Procmon
+# configuration file before running malware analysis.
+
+This is a placeholder for procmon.pmc configuration file.
+Please export an actual .pmc file from Process Monitor and replace this file.
