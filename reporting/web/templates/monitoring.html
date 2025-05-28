@@ -1,0 +1,425 @@
+<!-- shikra/reporting/web/templates/analyses/monitoring.html -->
+<!-- Live monitoring interface template -->
+
+{% extends "base.html" %}
+
+{% block title %}Live Monitoring - Shikra Analysis Framework{% endblock %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/monitoring.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block page_header %}
+<div class="monitoring-header">
+    <div class="monitoring-title">
+        <i class="fas fa-eye me-2"></i>Live Monitoring
+    </div>
+    <div class="monitoring-controls">
+        <button id="start-monitoring" class="monitoring-btn start">
+            <i class="fas fa-play me-1"></i>Start
+        </button>
+        <button id="stop-monitoring" class="monitoring-btn stop" disabled>
+            <i class="fas fa-stop me-1"></i>Stop
+        </button>
+        <button id="pause-monitoring" class="monitoring-btn pause" disabled>
+            <i class="fas fa-pause me-1"></i>Pause
+        </button>
+        <button id="reset-monitoring" class="monitoring-btn reset">
+            <i class="fas fa-redo me-1"></i>Reset
+        </button>
+        <button id="export-data" class="monitoring-btn export">
+            <i class="fas fa-download me-1"></i>Export
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Monitoring Dashboard Grid -->
+<div class="monitoring-dashboard">
+    <!-- Real-time Statistics -->
+    <div class="monitoring-status">
+        <div class="realtime-stats">
+            <div class="stat-widget" data-metric="total-events">
+                <span class="stat-value">0</span>
+                <span class="stat-label">Total Events</span>
+                <div class="stat-change neutral">
+                    <i class="fas fa-minus"></i> No change
+                </div>
+            </div>
+            
+            <div class="stat-widget warning" data-metric="events-per-sec">
+                <span class="stat-value">0.0</span>
+                <span class="stat-label">Events/Sec</span>
+                <div class="stat-change neutral">
+                    <i class="fas fa-tachometer-alt"></i> Current rate
+                </div>
+            </div>
+            
+            <div class="stat-widget critical" data-metric="suspicious-events">
+                <span class="stat-value">0</span>
+                <span class="stat-label">Suspicious</span>
+                <div class="stat-change neutral">
+                    <i class="fas fa-exclamation-triangle"></i> High priority
+                </div>
+            </div>
+            
+            <div class="stat-widget success" data-metric="processes">
+                <span class="stat-value">0</span>
+                <span class="stat-label">Processes</span>
+                <div class="stat-change neutral">
+                    <i class="fas fa-cogs"></i> Active
+                </div>
+            </div>
+            
+            <div class="stat-widget" data-metric="connections">
+                <span class="stat-value">0</span>
+                <span class="stat-label">Connections</span>
+                <div class="stat-change neutral">
+                    <i class="fas fa-network-wired"></i> Network
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Feed -->
+    <div class="activity-panel">
+        <div class="activity-header">
+            <span>Live Activity Feed</span>
+            <div class="activity-controls">
+                <button class="monitoring-btn" data-clear-target="activity" title="Clear Feed">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <label class="d-flex align-items-center text-white">
+                    <input type="checkbox" id="auto-scroll-toggle" checked class="me-1">
+                    <small>Auto-scroll</small>
+                </label>
+            </div>
+        </div>
+        <div class="activity-feed" id="activity-feed">
+            <div class="text-center py-4 text-muted">
+                <i class="fas fa-play-circle fa-2x mb-2"></i>
+                <p>Click "Start" to begin monitoring live activities</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Process Monitor -->
+    <div class="process-monitor">
+        <div class="process-header">
+            <span>Process Tree</span>
+            <div class="activity-controls">
+                <button class="monitoring-btn" data-clear-target="processes" title="Clear Processes">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        <div class="process-tree" id="process-tree">
+            <div class="text-center py-4 text-muted">
+                <i class="fas fa-sitemap fa-2x mb-2"></i>
+                <p>Process creation tree will appear here</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Controls -->
+<div class="filter-bar">
+    <div class="filter-group">
+        <span class="filter-label">Severity:</span>
+        <select class="filter-select" id="severity-filter">
+            <option value="all">All Severities</option>
+            <option value="critical">Critical</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+            <option value="info">Info</option>
+        </select>
+    </div>
+    
+    <div class="filter-group">
+        <span class="filter-label">Category:</span>
+        <select class="filter-select" id="category-filter">
+            <option value="all">All Categories</option>
+            <option value="process">Process</option>
+            <option value="file">File</option>
+            <option value="registry">Registry</option>
+            <option value="network">Network</option>
+        </select>
+    </div>
+    
+    <div class="filter-group">
+        <span class="filter-label">Process:</span>
+        <select class="filter-select" id="process-filter">
+            <option value="all">All Processes</option>
+        </select>
+    </div>
+    
+    <div class="filter-group">
+        <span class="filter-label">View:</span>
+        <div class="filter-toggle">
+            <input type="radio" id="view-all" name="view-filter" value="all" checked>
+            <label for="view-all">All</label>
+            <input type="radio" id="view-suspicious" name="view-filter" value="suspicious">
+            <label for="view-suspicious">Suspicious Only</label>
+        </div>
+    </div>
+</div>
+
+<!-- Network Connections Panel -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="network-monitor">
+            <div class="network-header">
+                <span>Network Connections</span>
+                <div class="activity-controls">
+                    <button class="monitoring-btn" data-clear-target="connections" title="Clear Connections">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="connection-list" id="connection-list">
+                <div class="text-center py-4 text-muted">
+                    <i class="fas fa-globe fa-2x mb-2"></i>
+                    <p>Network connections will appear here</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="metrics-panel">
+            <div class="metrics-header">
+                System Metrics
+            </div>
+            <div class="metrics-grid">
+                <div class="metric-item">
+                    <span class="metric-value" id="cpu-usage">0</span>
+                    <span class="metric-label">CPU %</span>
+                    <div class="progress mt-2">
+                        <div class="progress-bar" id="cpu-progress" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="metric-item">
+                    <span class="metric-value" id="memory-usage">0</span>
+                    <span class="metric-label">Memory %</span>
+                    <div class="progress mt-2">
+                        <div class="progress-bar" id="memory-progress" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="metric-item">
+                    <span class="metric-value" id="disk-io">0</span>
+                    <span class="metric-label">Disk I/O</span>
+                    <div class="progress mt-2">
+                        <div class="progress-bar" id="disk-progress" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="metric-item">
+                    <span class="metric-value" id="network-io">0</span>
+                    <span class="metric-label">Network I/O</span>
+                    <div class="progress mt-2">
+                        <div class="progress-bar" id="network-progress" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Activity Timeline</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="activity-timeline-chart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Severity Distribution</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="severity-distribution-chart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Log Viewer -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">System Logs</h6>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="clearLogs()">
+                        <i class="fas fa-trash me-1"></i>Clear
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="exportLogs()">
+                        <i class="fas fa-download me-1"></i>Export
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="log-viewer" id="log-viewer">
+                    <div class="log-line info">
+                        <span class="log-timestamp">[{{ moment().format('YYYY-MM-DD HH:mm:ss') }}]</span>
+                        <span class="log-level">INFO</span>
+                        Monitoring interface initialized and ready
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Banner Container -->
+<div class="alert-banner" id="alert-banner"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/monitoring.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize monitoring interface
+    MonitoringInterface.init();
+    
+    // Add some demo data for testing (remove in production)
+    {% if config.DEBUG %}
+    setTimeout(() => {
+        // Simulate some activity for demo purposes
+        MonitoringInterface.handleUpdate({
+            event_type: 'activity',
+            id: 'demo_1',
+            timestamp: Date.now(),
+            category: 'process',
+            severity: 'medium',
+            title: 'Process Created',
+            description: 'cmd.exe spawned by explorer.exe',
+            process: 'explorer.exe',
+            pid: '1234',
+            details: {
+                command: 'cmd.exe /c whoami',
+                parent_pid: '5678'
+            }
+        });
+        
+        MonitoringInterface.handleUpdate({
+            event_type: 'process',
+            pid: '1234',
+            ppid: '5678',
+            name: 'cmd.exe',
+            command: 'cmd.exe /c whoami',
+            timestamp: Date.now(),
+            suspicious: false
+        });
+        
+        MonitoringInterface.handleUpdate({
+            event_type: 'network',
+            id: 'conn_1',
+            dest_ip: '8.8.8.8',
+            dest_port: '53',
+            protocol: 'UDP',
+            process: 'svchost.exe',
+            pid: '9999',
+            timestamp: Date.now(),
+            suspicious: false
+        });
+    }, 2000);
+    {% endif %}
+});
+
+// Log functions
+function clearLogs() {
+    const logViewer = document.getElementById('log-viewer');
+    if (logViewer) {
+        logViewer.innerHTML = '<div class="log-line info"><span class="log-timestamp">[' + new Date().toISOString().replace('T', ' ').slice(0, 19) + ']</span><span class="log-level">INFO</span>Log cleared by user</div>';
+    }
+}
+
+function exportLogs() {
+    const logViewer = document.getElementById('log-viewer');
+    if (logViewer) {
+        const logs = Array.from(logViewer.querySelectorAll('.log-line')).map(line => line.textContent).join('\n');
+        const blob = new Blob([logs], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `shikra_monitoring_logs_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+}
+
+// Add log entry function
+function addLogEntry(level, message) {
+    const logViewer = document.getElementById('log-viewer');
+    if (logViewer) {
+        const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
+        const logLine = document.createElement('div');
+        logLine.className = `log-line ${level.toLowerCase()}`;
+        logLine.innerHTML = `
+            <span class="log-timestamp">[${timestamp}]</span>
+            <span class="log-level">${level.toUpperCase()}</span>
+            ${message}
+        `;
+        logViewer.appendChild(logLine);
+        
+        // Auto-scroll to bottom
+        logViewer.scrollTop = logViewer.scrollHeight;
+        
+        // Limit log entries to prevent memory issues
+        const logLines = logViewer.querySelectorAll('.log-line');
+        if (logLines.length > 1000) {
+            logLines[0].remove();
+        }
+    }
+}
+
+// Override console.log to capture in log viewer
+const originalConsoleLog = console.log;
+const originalConsoleWarn = console.warn;
+const originalConsoleError = console.error;
+
+console.log = function(...args) {
+    originalConsoleLog.apply(console, args);
+    addLogEntry('info', args.join(' '));
+};
+
+console.warn = function(...args) {
+    originalConsoleWarn.apply(console, args);
+    addLogEntry('warning', args.join(' '));
+};
+
+console.error = function(...args) {
+    originalConsoleError.apply(console, args);
+    addLogEntry('error', args.join(' '));
+};
+
+// WebSocket connection status
+window.addEventListener('beforeunload', function() {
+    if (MonitoringInterface.state.isMonitoring) {
+        MonitoringInterface.stopMonitoring();
+    }
+});
+</script>
+{% endblock %}
+
+{% block page_init_js %}
+// Monitoring page initialization
+console.log('Live monitoring interface loaded');
+
+// Show initial help message
+setTimeout(() => {
+    Shikra.notifications.show('Click "Start" to begin real-time monitoring of system activities', 'info', 5000);
+}, 1000);
+{% endblock %}
